@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    #vis.vega-embed {
+      width: 100%;
+      display: flex;
+    }
+
+    #vis.vega-embed details,
+    #vis.vega-embed details summary {
+      position: relative;
+    }
+  </style>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega@5"></script>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega-lite@5.20.1"></script>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
+</head>
+<body>
+  <div id="vis"></div>
+  <script>
+    (function(vegaEmbed) {
+      var spec = {"config": {"view": {"continuousWidth": 300, "continuousHeight": 300}, "axis": {"labelFontSize": 11, "titleFontSize": 13}}, "vconcat": [{"layer": [{"mark": {"type": "line", "strokeWidth": 3}, "encoding": {"color": {"field": "game_type", "legend": {"title": "Game Type (click)"}, "scale": {"domain": ["Indie", "Non-Indie"], "range": ["#4ECDC4", "#FF6B6B"]}, "type": "nominal"}, "opacity": {"condition": {"param": "param_9", "value": 1}, "value": 0.15}, "x": {"axis": {"labelAngle": 0, "labels": false, "tickMinStep": 1}, "field": "release_year", "title": "", "type": "ordinal"}, "y": {"field": "count", "title": "New Games Released", "type": "quantitative"}}, "name": "view_7"}, {"mark": {"type": "point", "filled": true, "size": 70}, "encoding": {"color": {"field": "game_type", "type": "nominal"}, "opacity": {"condition": {"param": "param_9", "value": 1}, "value": 0.15}, "tooltip": [{"field": "release_year", "title": "Year", "type": "ordinal"}, {"field": "game_type", "title": "Type", "type": "nominal"}, {"field": "count", "format": ",", "title": "Games Released", "type": "quantitative"}, {"field": "percentage", "format": ".1%", "title": "Share of Total", "type": "quantitative"}], "x": {"field": "release_year", "type": "ordinal"}, "y": {"field": "count", "type": "quantitative"}}}, {"data": {"name": "data-3598f61c3c9949769d34ea827c68aa10"}, "mark": {"type": "rule", "color": "#444", "strokeDash": [5, 3], "strokeWidth": 1.5}, "encoding": {"x": {"field": "release_year", "type": "ordinal"}}}, {"data": {"name": "data-3598f61c3c9949769d34ea827c68aa10"}, "mark": {"type": "text", "align": "left", "color": "#333", "dx": 6, "dy": 0, "fontSize": 11, "fontWeight": "bold"}, "encoding": {"text": {"field": "label", "type": "nominal"}, "x": {"field": "release_year", "type": "ordinal"}, "y": {"field": "y_text", "type": "quantitative"}}}], "data": {"name": "data-95524edce65335ebe854aaa18465a8f1"}, "height": 280, "width": 750}, {"layer": [{"data": {"name": "data-95524edce65335ebe854aaa18465a8f1"}, "mark": {"type": "bar", "opacity": 0.85}, "encoding": {"color": {"field": "game_type", "type": "nominal"}, "opacity": {"condition": {"param": "param_9", "value": 0.85}, "value": 0.15}, "tooltip": [{"field": "release_year", "title": "Year", "type": "ordinal"}, {"field": "game_type", "title": "Type", "type": "nominal"}, {"field": "percentage", "format": ".1%", "title": "Share of Total", "type": "quantitative"}, {"field": "count", "format": ",", "title": "Games Released", "type": "quantitative"}], "x": {"axis": {"labelAngle": 0, "tickMinStep": 1}, "field": "release_year", "title": "Year", "type": "ordinal"}, "y": {"axis": {"format": "%"}, "field": "percentage", "stack": true, "title": "Market Share (%)", "type": "quantitative"}}}, {"data": {"name": "data-3598f61c3c9949769d34ea827c68aa10"}, "mark": {"type": "rule", "color": "#444", "strokeDash": [5, 3], "strokeWidth": 1.5}, "encoding": {"x": {"field": "release_year", "type": "ordinal"}}}], "height": 140, "width": 750}], "params": [{"name": "param_9", "select": {"type": "point", "fields": ["game_type"]}, "bind": "legend", "views": ["view_7"]}], "title": {"text": "The Flood: Steam Game Releases & Market Share (2008\u20132024)", "fontSize": 18, "subtitle": "Top: Absolute game releases | Bottom: Percentage share of total games released each year (Stacked Bar)", "subtitleColor": "#666"}, "$schema": "https://vega.github.io/schema/vega-lite/v5.20.1.json", "datasets": {"data-95524edce65335ebe854aaa18465a8f1": [{"release_year": 2008, "game_type": "Indie", "count": 26, "percentage": 0.16455696202531644}, {"release_year": 2008, "game_type": "Non-Indie", "count": 132, "percentage": 0.8354430379746836}, {"release_year": 2009, "game_type": "Indie", "count": 61, "percentage": 0.1942675159235669}, {"release_year": 2009, "game_type": "Non-Indie", "count": 253, "percentage": 0.8057324840764332}, {"release_year": 2010, "game_type": "Indie", "count": 68, "percentage": 0.24727272727272728}, {"release_year": 2010, "game_type": "Non-Indie", "count": 207, "percentage": 0.7527272727272727}, {"release_year": 2011, "game_type": "Indie", "count": 104, "percentage": 0.3781818181818182}, {"release_year": 2011, "game_type": "Non-Indie", "count": 171, "percentage": 0.6218181818181818}, {"release_year": 2012, "game_type": "Indie", "count": 167, "percentage": 0.5186335403726708}, {"release_year": 2012, "game_type": "Non-Indie", "count": 155, "percentage": 0.4813664596273292}, {"release_year": 2013, "game_type": "Indie", "count": 261, "percentage": 0.5736263736263736}, {"release_year": 2013, "game_type": "Non-Indie", "count": 194, "percentage": 0.42637362637362636}, {"release_year": 2014, "game_type": "Indie", "count": 875, "percentage": 0.587248322147651}, {"release_year": 2014, "game_type": "Non-Indie", "count": 615, "percentage": 0.412751677852349}, {"release_year": 2015, "game_type": "Indie", "count": 1831, "percentage": 0.7431006493506493}, {"release_year": 2015, "game_type": "Non-Indie", "count": 633, "percentage": 0.25689935064935066}, {"release_year": 2016, "game_type": "Indie", "count": 2936, "percentage": 0.7267326732673267}, {"release_year": 2016, "game_type": "Non-Indie", "count": 1104, "percentage": 0.2732673267326733}, {"release_year": 2017, "game_type": "Indie", "count": 4230, "percentage": 0.7339927121290994}, {"release_year": 2017, "game_type": "Non-Indie", "count": 1533, "percentage": 0.26600728787090056}, {"release_year": 2018, "game_type": "Indie", "count": 5761, "percentage": 0.784556720686368}, {"release_year": 2018, "game_type": "Non-Indie", "count": 1582, "percentage": 0.21544327931363202}, {"release_year": 2019, "game_type": "Indie", "count": 5548, "percentage": 0.7779024116657319}, {"release_year": 2019, "game_type": "Non-Indie", "count": 1584, "percentage": 0.2220975883342681}, {"release_year": 2020, "game_type": "Indie", "count": 6607, "percentage": 0.7588147467554841}, {"release_year": 2020, "game_type": "Non-Indie", "count": 2100, "percentage": 0.2411852532445159}, {"release_year": 2021, "game_type": "Indie", "count": 7442, "percentage": 0.7148895292987512}, {"release_year": 2021, "game_type": "Non-Indie", "count": 2968, "percentage": 0.2851104707012488}, {"release_year": 2022, "game_type": "Indie", "count": 7957, "percentage": 0.6922140060896042}, {"release_year": 2022, "game_type": "Non-Indie", "count": 3538, "percentage": 0.30778599391039585}, {"release_year": 2023, "game_type": "Indie", "count": 9314, "percentage": 0.6797547803240402}, {"release_year": 2023, "game_type": "Non-Indie", "count": 4388, "percentage": 0.3202452196759597}, {"release_year": 2024, "game_type": "Indie", "count": 8672, "percentage": 0.6964343077417282}, {"release_year": 2024, "game_type": "Non-Indie", "count": 3780, "percentage": 0.3035656922582718}], "data-3598f61c3c9949769d34ea827c68aa10": [{"release_year": 2012, "label": "Steam Greenlight (2012)", "y_text": 8000}, {"release_year": 2017, "label": "Steam Direct (2017)", "y_text": 10000}]}};
+      var embedOpt = {"mode": "vega-lite"};
+
+      function showError(el, error){
+          el.innerHTML = ('<div style="color:red;">'
+                          + '<p>JavaScript Error: ' + error.message + '</p>'
+                          + "<p>This usually means there's a typo in your chart specification. "
+                          + "See the javascript console for the full traceback.</p>"
+                          + '</div>');
+          throw error;
+      }
+      const el = document.getElementById('vis');
+      vegaEmbed("#vis", spec, embedOpt)
+        .catch(error => showError(el, error));
+    })(vegaEmbed);
+
+  </script>
+</body>
+</html>
