@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scene 6 - Genre Resilience</title>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --surface: #ffffff;
+      --line: rgba(15, 23, 42, 0.12);
+      --grid: rgba(15, 23, 42, 0.08);
+      --text: #12202f;
+      --muted: #5f6c7b;
+      --accent: #1d3557;
+      --soft: #eef3f8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: Georgia, "Times New Roman", serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .scene {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 18px 18px 12px;
+      background: var(--surface);
+    }
+
+    .eyebrow {
+      font: 600 0.8rem/1.2 "Segoe UI", sans-serif;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    h1 {
+      font-size: clamp(1.8rem, 3vw, 2.9rem);
+      line-height: 1.05;
+      color: #102a43;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      max-width: 900px;
+      color: var(--muted);
+      font-size: 1rem;
+      line-height: 1.6;
+      margin-bottom: 18px;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 14px;
+      margin-bottom: 12px;
+    }
+
+    .control-card,
+    .summary-card {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(248,250,252,0.96));
+      padding: 14px;
+    }
+
+    .narrative-row,
+    .timeline,
+    .stat-label,
+    .stat-value,
+    .hint,
+    .legend,
+    .year-badge,
+    .summary-copy,
+    .chip,
+    .button {
+      font-family: "Segoe UI", sans-serif;
+    }
+
+    .narrative-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .title-sm {
+      font: 700 0.95rem/1.3 "Segoe UI", sans-serif;
+      color: #102a43;
+      margin-bottom: 2px;
+    }
+
+    .year-badge {
+      color: var(--accent);
+      font-size: 1.25rem;
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .button {
+      border: 1px solid rgba(29, 53, 87, 0.16);
+      background: #f7f9fb;
+      color: var(--accent);
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 140ms ease, transform 140ms ease;
+    }
+
+    .button:hover {
+      background: #eef3f8;
+      transform: translateY(-1px);
+    }
+
+    .progress-shell {
+      position: relative;
+      height: 12px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, rgba(69, 123, 157, 0.1), rgba(230, 57, 70, 0.12));
+      overflow: hidden;
+      margin-bottom: 10px;
+    }
+
+    .progress-fill {
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: 0%;
+      background: linear-gradient(90deg, #457b9d, #e63946);
+      border-radius: 999px;
+      transition: width 180ms ease;
+    }
+
+    .timeline {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+
+    .chip {
+      border: 1px solid rgba(15, 23, 42, 0.08);
+      border-radius: 999px;
+      padding: 6px 10px;
+      background: #fbfcfd;
+      font-size: 0.78rem;
+      color: var(--muted);
+      transition: all 180ms ease;
+    }
+
+    .chip.active {
+      color: #fff;
+      background: var(--accent);
+      border-color: rgba(29, 53, 87, 0.16);
+      transform: translateY(-1px);
+    }
+
+    .hint {
+      color: var(--muted);
+      font-size: 0.8rem;
+      line-height: 1.45;
+    }
+
+    .summary-card {
+      display: grid;
+      gap: 10px;
+      align-content: start;
+    }
+
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .stat {
+      border-radius: 14px;
+      border: 1px solid rgba(15, 23, 42, 0.08);
+      background: rgba(255,255,255,0.72);
+      padding: 10px;
+    }
+
+    .stat-label {
+      color: var(--muted);
+      font-size: 0.76rem;
+      margin-bottom: 6px;
+    }
+
+    .stat-value {
+      font: 800 1.08rem/1.15 "Segoe UI", sans-serif;
+      color: #102a43;
+    }
+
+    .summary-copy {
+      color: var(--muted);
+      font-size: 0.84rem;
+      line-height: 1.55;
+    }
+
+    .legend {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+      color: var(--muted);
+      font-size: 0.8rem;
+    }
+
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border-radius: 999px;
+      padding: 7px 10px;
+      border: 1px solid rgba(15, 23, 42, 0.08);
+      background: #fbfcfd;
+      cursor: pointer;
+      user-select: none;
+      transition: all 140ms ease;
+    }
+
+    .legend-item:hover {
+      transform: translateY(-1px);
+    }
+
+    .legend-item.active {
+      border-color: rgba(29, 53, 87, 0.18);
+      background: #eef3f8;
+      color: #102a43;
+    }
+
+    .legend-item.muted {
+      opacity: 0.35;
+    }
+
+    .swatch {
+      width: 12px;
+      height: 12px;
+      border-radius: 999px;
+      flex: 0 0 12px;
+    }
+
+    #vizWrap {
+      width: 100%;
+      border-top: 1px solid rgba(15, 23, 42, 0.05);
+      padding-top: 12px;
+      position: relative;
+    }
+
+    svg {
+      display: block;
+      width: 100%;
+      height: auto;
+      border-radius: 18px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.99), rgba(249,250,252,0.98));
+    }
+
+    .tooltip {
+      position: fixed;
+      display: none;
+      pointer-events: none;
+      z-index: 999;
+      background: rgba(255, 255, 255, 0.98);
+      border: 1px solid rgba(15, 23, 42, 0.12);
+      box-shadow: 0 14px 40px rgba(15, 23, 42, 0.10);
+      border-radius: 12px;
+      padding: 10px 12px;
+      color: var(--text);
+      font: 12px/1.55 "Segoe UI", sans-serif;
+      min-width: 220px;
+      max-width: 280px;
+    }
+
+    .tooltip.show {
+      display: block;
+    }
+
+    .tooltip strong {
+      display: block;
+      margin-bottom: 4px;
+      color: #102a43;
+      font-size: 12.5px;
+    }
+
+    @media (max-width: 880px) {
+      .controls {
+        grid-template-columns: 1fr;
+      }
+
+      .stat-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="scene">
+    <div class="eyebrow">Scene 6</div>
+    <h1>Genre Resilience Atlas</h1>
+    <p class="subtitle">
+      Instead of treating Steam as one market, this scene watches six genre ecosystems move through the same storm.
+      As the timeline advances, each bubble travels through a quality-versus-crowding map. Some genres keep quality high
+      even while competition explodes. Others get dragged rightward into overcrowding without keeping the same standards.
+    </p>
+
+    <div class="controls">
+      <div class="control-card">
+        <div class="narrative-row">
+          <div>
+            <div class="title-sm">Autoplay Narrative</div>
+            <div class="hint" id="sceneCopy">When this scene enters view, the genre map starts tracing itself automatically.</div>
+          </div>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <div class="year-badge" id="yearBadge">2013</div>
+            <button class="button" id="replayBtn" type="button">Replay</button>
+          </div>
+        </div>
+        <div class="progress-shell">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div class="timeline" id="timelineChips"></div>
+        <div class="hint">
+          Click a genre pill to isolate its path. Hover bubbles for year-by-year stats. The scene pauses briefly at key years so the shifts can breathe.
+        </div>
+      </div>
+
+      <div class="summary-card">
+        <div class="title-sm">Resilience at a glance</div>
+        <div class="stat-grid">
+          <div class="stat">
+            <div class="stat-label" id="stat1Label">Most crowded</div>
+            <div class="stat-value" id="stat1Value">Action</div>
+          </div>
+          <div class="stat">
+            <div class="stat-label" id="stat2Label">Highest quality</div>
+            <div class="stat-value" id="stat2Value">Adventure</div>
+          </div>
+          <div class="stat">
+            <div class="stat-label" id="stat3Label">Best hit rate</div>
+            <div class="stat-value" id="stat3Value">RPG</div>
+          </div>
+        </div>
+        <div class="summary-copy" id="summaryCopy">
+          In 2013 the genre field is still compact. Over time the market expands outward, but genres do not move together.
+        </div>
+      </div>
+    </div>
+
+    <div class="legend" id="legend"></div>
+
+    <div id="vizWrap">
+      <svg id="chart" viewBox="0 0 1040 720" aria-label="Genre resilience chart"></svg>
+    </div>
+  </div>
+
+  <div class="tooltip" id="tooltip"></div>
+
+  <script>
+    const rows = [{"release_year":2013,"primary_genre":"Action","game_count":229,"avg_pos_pct":80.2,"hit_count":21,"hit_rate":9.17},{"release_year":2013,"primary_genre":"Adventure","game_count":79,"avg_pos_pct":80.8,"hit_count":9,"hit_rate":11.39},{"release_year":2013,"primary_genre":"Casual","game_count":41,"avg_pos_pct":72.3,"hit_count":3,"hit_rate":7.32},{"release_year":2013,"primary_genre":"RPG","game_count":24,"avg_pos_pct":75.6,"hit_count":3,"hit_rate":12.5},{"release_year":2013,"primary_genre":"Simulation","game_count":39,"avg_pos_pct":64.3,"hit_count":2,"hit_rate":5.13},{"release_year":2013,"primary_genre":"Strategy","game_count":26,"avg_pos_pct":66.3,"hit_count":0,"hit_rate":0.0},{"release_year":2014,"primary_genre":"Action","game_count":628,"avg_pos_pct":72.9,"hit_count":39,"hit_rate":6.21},{"release_year":2014,"primary_genre":"Adventure","game_count":353,"avg_pos_pct":71.6,"hit_count":10,"hit_rate":2.83},{"release_year":2014,"primary_genre":"Casual","game_count":160,"avg_pos_pct":71.0,"hit_count":5,"hit_rate":3.12},{"release_year":2014,"primary_genre":"RPG","game_count":99,"avg_pos_pct":73.5,"hit_count":3,"hit_rate":3.03},{"release_year":2014,"primary_genre":"Simulation","game_count":100,"avg_pos_pct":58.3,"hit_count":3,"hit_rate":3.0},{"release_year":2014,"primary_genre":"Strategy","game_count":92,"avg_pos_pct":61.0,"hit_count":0,"hit_rate":0.0},{"release_year":2015,"primary_genre":"Action","game_count":1087,"avg_pos_pct":69.3,"hit_count":40,"hit_rate":3.68},{"release_year":2015,"primary_genre":"Adventure","game_count":565,"avg_pos_pct":72.2,"hit_count":12,"hit_rate":2.12},{"release_year":2015,"primary_genre":"Casual","game_count":289,"avg_pos_pct":74.7,"hit_count":3,"hit_rate":1.04},{"release_year":2015,"primary_genre":"RPG","game_count":129,"avg_pos_pct":77.9,"hit_count":4,"hit_rate":3.1},{"release_year":2015,"primary_genre":"Simulation","game_count":158,"avg_pos_pct":66.1,"hit_count":10,"hit_rate":6.33},{"release_year":2015,"primary_genre":"Strategy","game_count":113,"avg_pos_pct":70.6,"hit_count":4,"hit_rate":3.54},{"release_year":2016,"primary_genre":"Action","game_count":1812,"avg_pos_pct":68.2,"hit_count":46,"hit_rate":2.54},{"release_year":2016,"primary_genre":"Adventure","game_count":855,"avg_pos_pct":76.0,"hit_count":25,"hit_rate":2.92},{"release_year":2016,"primary_genre":"Casual","game_count":663,"avg_pos_pct":70.5,"hit_count":9,"hit_rate":1.36},{"release_year":2016,"primary_genre":"RPG","game_count":140,"avg_pos_pct":69.4,"hit_count":2,"hit_rate":1.43},{"release_year":2016,"primary_genre":"Simulation","game_count":252,"avg_pos_pct":66.3,"hit_count":10,"hit_rate":3.97},{"release_year":2016,"primary_genre":"Strategy","game_count":134,"avg_pos_pct":72.6,"hit_count":6,"hit_rate":4.48},{"release_year":2017,"primary_genre":"Action","game_count":2630,"avg_pos_pct":68.0,"hit_count":43,"hit_rate":1.63},{"release_year":2017,"primary_genre":"Adventure","game_count":1268,"avg_pos_pct":73.1,"hit_count":24,"hit_rate":1.89},{"release_year":2017,"primary_genre":"Casual","game_count":952,"avg_pos_pct":70.0,"hit_count":8,"hit_rate":0.84},{"release_year":2017,"primary_genre":"RPG","game_count":188,"avg_pos_pct":76.8,"hit_count":2,"hit_rate":1.06},{"release_year":2017,"primary_genre":"Simulation","game_count":267,"avg_pos_pct":70.5,"hit_count":7,"hit_rate":2.62},{"release_year":2017,"primary_genre":"Strategy","game_count":203,"avg_pos_pct":64.9,"hit_count":5,"hit_rate":2.46},{"release_year":2018,"primary_genre":"Action","game_count":3177,"avg_pos_pct":68.6,"hit_count":54,"hit_rate":1.7},{"release_year":2018,"primary_genre":"Adventure","game_count":1551,"avg_pos_pct":73.4,"hit_count":26,"hit_rate":1.68},{"release_year":2018,"primary_genre":"Casual","game_count":1481,"avg_pos_pct":70.9,"hit_count":9,"hit_rate":0.61},{"release_year":2018,"primary_genre":"RPG","game_count":211,"avg_pos_pct":72.4,"hit_count":3,"hit_rate":1.42},{"release_year":2018,"primary_genre":"Simulation","game_count":351,"avg_pos_pct":66.9,"hit_count":14,"hit_rate":3.99},{"release_year":2018,"primary_genre":"Strategy","game_count":190,"avg_pos_pct":66.7,"hit_count":3,"hit_rate":1.58},{"release_year":2019,"primary_genre":"Action","game_count":3036,"avg_pos_pct":71.2,"hit_count":44,"hit_rate":1.45},{"release_year":2019,"primary_genre":"Adventure","game_count":1603,"avg_pos_pct":76.3,"hit_count":18,"hit_rate":1.12},{"release_year":2019,"primary_genre":"Casual","game_count":1317,"avg_pos_pct":77.6,"hit_count":10,"hit_rate":0.76},{"release_year":2019,"primary_genre":"RPG","game_count":262,"avg_pos_pct":72.6,"hit_count":5,"hit_rate":1.91},{"release_year":2019,"primary_genre":"Simulation","game_count":346,"avg_pos_pct":71.3,"hit_count":8,"hit_rate":2.31},{"release_year":2019,"primary_genre":"Strategy","game_count":198,"avg_pos_pct":71.1,"hit_count":4,"hit_rate":2.02},{"release_year":2020,"primary_genre":"Action","game_count":3754,"avg_pos_pct":75.4,"hit_count":54,"hit_rate":1.44},{"release_year":2020,"primary_genre":"Adventure","game_count":1814,"avg_pos_pct":77.7,"hit_count":20,"hit_rate":1.1},{"release_year":2020,"primary_genre":"Casual","game_count":1708,"avg_pos_pct":77.9,"hit_count":13,"hit_rate":0.76},{"release_year":2020,"primary_genre":"RPG","game_count":307,"avg_pos_pct":78.8,"hit_count":9,"hit_rate":2.93},{"release_year":2020,"primary_genre":"Simulation","game_count":435,"avg_pos_pct":72.0,"hit_count":8,"hit_rate":1.84},{"release_year":2020,"primary_genre":"Strategy","game_count":228,"avg_pos_pct":75.6,"hit_count":2,"hit_rate":0.88},{"release_year":2021,"primary_genre":"Action","game_count":4243,"avg_pos_pct":73.2,"hit_count":47,"hit_rate":1.11},{"release_year":2021,"primary_genre":"Adventure","game_count":2226,"avg_pos_pct":80.9,"hit_count":14,"hit_rate":0.63},{"release_year":2021,"primary_genre":"Casual","game_count":2358,"avg_pos_pct":77.7,"hit_count":10,"hit_rate":0.42},{"release_year":2021,"primary_genre":"RPG","game_count":416,"avg_pos_pct":75.0,"hit_count":13,"hit_rate":3.12},{"release_year":2021,"primary_genre":"Simulation","game_count":478,"avg_pos_pct":77.0,"hit_count":13,"hit_rate":2.72},{"release_year":2021,"primary_genre":"Strategy","game_count":247,"avg_pos_pct":76.2,"hit_count":2,"hit_rate":0.81},{"release_year":2022,"primary_genre":"Action","game_count":4692,"avg_pos_pct":77.0,"hit_count":35,"hit_rate":0.75},{"release_year":2022,"primary_genre":"Adventure","game_count":2511,"avg_pos_pct":78.4,"hit_count":23,"hit_rate":0.92},{"release_year":2022,"primary_genre":"Casual","game_count":2533,"avg_pos_pct":79.5,"hit_count":9,"hit_rate":0.36},{"release_year":2022,"primary_genre":"RPG","game_count":459,"avg_pos_pct":73.1,"hit_count":8,"hit_rate":1.74},{"release_year":2022,"primary_genre":"Simulation","game_count":545,"avg_pos_pct":78.0,"hit_count":10,"hit_rate":1.83},{"release_year":2022,"primary_genre":"Strategy","game_count":286,"avg_pos_pct":74.1,"hit_count":0,"hit_rate":0.0},{"release_year":2023,"primary_genre":"Action","game_count":5770,"avg_pos_pct":77.6,"hit_count":59,"hit_rate":1.02},{"release_year":2023,"primary_genre":"Adventure","game_count":2949,"avg_pos_pct":80.4,"hit_count":19,"hit_rate":0.64},{"release_year":2023,"primary_genre":"Casual","game_count":2824,"avg_pos_pct":76.7,"hit_count":5,"hit_rate":0.18},{"release_year":2023,"primary_genre":"RPG","game_count":597,"avg_pos_pct":76.8,"hit_count":7,"hit_rate":1.17},{"release_year":2023,"primary_genre":"Simulation","game_count":683,"avg_pos_pct":67.5,"hit_count":7,"hit_rate":1.02},{"release_year":2023,"primary_genre":"Strategy","game_count":364,"avg_pos_pct":84.4,"hit_count":4,"hit_rate":1.1},{"release_year":2024,"primary_genre":"Action","game_count":4918,"avg_pos_pct":80.8,"hit_count":16,"hit_rate":0.33},{"release_year":2024,"primary_genre":"Adventure","game_count":2554,"avg_pos_pct":85.6,"hit_count":14,"hit_rate":0.55},{"release_year":2024,"primary_genre":"Casual","game_count":2899,"avg_pos_pct":82.4,"hit_count":3,"hit_rate":0.1},{"release_year":2024,"primary_genre":"RPG","game_count":526,"avg_pos_pct":83.9,"hit_count":5,"hit_rate":0.95},{"release_year":2024,"primary_genre":"Simulation","game_count":601,"avg_pos_pct":75.8,"hit_count":5,"hit_rate":0.83},{"release_year":2024,"primary_genre":"Strategy","game_count":377,"avg_pos_pct":79.2,"hit_count":1,"hit_rate":0.27}];
+
+    const COLORS = {
+      Action: "#e63946",
+      Adventure: "#457b9d",
+      Casual: "#f4a261",
+      Simulation: "#2a9d8f",
+      Strategy: "#8338ec",
+      RPG: "#fb8500"
+    };
+
+    const YEARS = [...new Set(rows.map(d => d.release_year))].sort((a, b) => a - b);
+    const GENRES = Object.keys(COLORS);
+    const KEY_YEARS = [2013, 2016, 2019, 2022, 2024];
+    const PAUSES = { 2013: 900, 2016: 1100, 2019: 1100, 2022: 1300, 2024: 1800 };
+
+    const svg = document.getElementById("chart");
+    const tooltip = document.getElementById("tooltip");
+    const yearBadge = document.getElementById("yearBadge");
+    const progressFill = document.getElementById("progressFill");
+    const replayBtn = document.getElementById("replayBtn");
+    const timelineChips = document.getElementById("timelineChips");
+    const sceneCopy = document.getElementById("sceneCopy");
+    const summaryCopy = document.getElementById("summaryCopy");
+    const legend = document.getElementById("legend");
+
+    const stat1Label = document.getElementById("stat1Label");
+    const stat1Value = document.getElementById("stat1Value");
+    const stat2Label = document.getElementById("stat2Label");
+    const stat2Value = document.getElementById("stat2Value");
+    const stat3Label = document.getElementById("stat3Label");
+    const stat3Value = document.getElementById("stat3Value");
+
+    const NS = "http://www.w3.org/2000/svg";
+    const W = 1040;
+    const H = 720;
+    const margin = { top: 56, right: 84, bottom: 82, left: 86 };
+    const innerW = W - margin.left - margin.right;
+    const innerH = H - margin.top - margin.bottom;
+    const xMin = Math.log10(Math.min(...rows.map(d => d.game_count)));
+    const xMax = Math.log10(Math.max(...rows.map(d => d.game_count)));
+    const yMin = 55;
+    const yMax = 88;
+    const hitMax = Math.max(...rows.map(d => d.hit_count));
+
+    const grouped = Object.fromEntries(GENRES.map(genre => [
+      genre,
+      rows.filter(d => d.primary_genre === genre).sort((a, b) => a.release_year - b.release_year)
+    ]));
+
+    const state = {
+      yearFloat: 2013,
+      selectedGenre: null,
+      hoverGenre: null,
+      hoverDatum: null,
+      playing: false,
+      hasStarted: false,
+      pauseUntil: 0,
+      raf: null,
+      lastTs: null
+    };
+
+    function xScale(v) {
+      const t = (Math.log10(v) - xMin) / (xMax - xMin);
+      return margin.left + t * innerW;
+    }
+
+    function yScale(v) {
+      const t = (v - yMin) / (yMax - yMin);
+      return margin.top + innerH - t * innerH;
+    }
+
+    function rScale(v) {
+      return 8 + Math.sqrt(v / hitMax) * 20;
+    }
+
+    function clamp(value, min, max) {
+      return Math.max(min, Math.min(max, value));
+    }
+
+    function lerp(a, b, t) {
+      return a + (b - a) * t;
+    }
+
+    function formatPct(v) {
+      return `${v.toFixed(1)}%`;
+    }
+
+    function formatCount(v) {
+      return v.toLocaleString("en-US");
+    }
+
+    function getInterpolated(genre, yearFloat) {
+      const series = grouped[genre];
+      const floorYear = Math.floor(yearFloat);
+      const ceilYear = Math.ceil(yearFloat);
+      const a = series.find(d => d.release_year === floorYear) || series[0];
+      const b = series.find(d => d.release_year === ceilYear) || series[series.length - 1];
+      if (!a || !b || floorYear === ceilYear) {
+        return { ...a };
+      }
+      const t = clamp(yearFloat - floorYear, 0, 1);
+      return {
+        release_year: yearFloat,
+        primary_genre: genre,
+        game_count: lerp(a.game_count, b.game_count, t),
+        avg_pos_pct: lerp(a.avg_pos_pct, b.avg_pos_pct, t),
+        hit_count: lerp(a.hit_count, b.hit_count, t),
+        hit_rate: lerp(a.hit_rate, b.hit_rate, t)
+      };
+    }
+
+    function getHistory(genre, yearFloat) {
+      const series = grouped[genre];
+      const complete = series.filter(d => d.release_year <= Math.floor(yearFloat));
+      const current = getInterpolated(genre, yearFloat);
+      const last = complete[complete.length - 1];
+      if (!last || last.release_year !== Math.floor(yearFloat) || yearFloat % 1 !== 0) {
+        complete.push(current);
+      }
+      return complete;
+    }
+
+    function pathString(points) {
+      return points.map((d, i) => `${i === 0 ? "M" : "L"}${xScale(d.game_count).toFixed(2)},${yScale(d.avg_pos_pct).toFixed(2)}`).join(" ");
+    }
+
+    function create(tag, attrs = {}, parent = svg) {
+      const node = document.createElementNS(NS, tag);
+      Object.entries(attrs).forEach(([key, value]) => node.setAttribute(key, value));
+      parent.appendChild(node);
+      return node;
+    }
+
+    const defs = create("defs");
+    const filter = create("filter", { id: "glow", x: "-40%", y: "-40%", width: "180%", height: "180%" }, defs);
+    create("feGaussianBlur", { stdDeviation: "8", result: "blur" }, filter);
+    create("feMerge", {}, filter).innerHTML = "<feMergeNode in=\"blur\"></feMergeNode><feMergeNode in=\"SourceGraphic\"></feMergeNode>";
+
+    const staticLayer = create("g");
+    const dynamicLayer = create("g");
+    const hoverLayer = create("g");
+
+    function drawStatic() {
+      staticLayer.innerHTML = "";
+
+      create("rect", {
+        x: 0,
+        y: 0,
+        width: W,
+        height: H,
+        rx: 18,
+        fill: "url(#bgFade)"
+      }, staticLayer);
+
+      const bgGrad = create("linearGradient", { id: "bgFade", x1: "0%", y1: "0%", x2: "0%", y2: "100%" }, defs);
+      bgGrad.innerHTML = `
+        <stop offset="0%" stop-color="rgba(255,255,255,0.99)"></stop>
+        <stop offset="100%" stop-color="rgba(249,250,252,0.98)"></stop>
+      `;
+
+      [60, 70, 80].forEach(value => {
+        const y = yScale(value);
+        create("line", {
+          x1: margin.left,
+          x2: W - margin.right,
+          y1: y,
+          y2: y,
+          stroke: "rgba(15, 23, 42, 0.08)",
+          "stroke-width": 1
+        }, staticLayer);
+        const text = create("text", {
+          x: margin.left - 14,
+          y: y + 4,
+          fill: "#5f6c7b",
+          "font-family": "Segoe UI, sans-serif",
+          "font-size": 12,
+          "text-anchor": "end"
+        }, staticLayer);
+        text.textContent = `${value}%`;
+      });
+
+      const xTicks = [30, 100, 300, 1000, 3000, 6000];
+      xTicks.forEach(value => {
+        const x = xScale(value);
+        create("line", {
+          x1: x,
+          x2: x,
+          y1: margin.top,
+          y2: H - margin.bottom,
+          stroke: "rgba(15, 23, 42, 0.06)",
+          "stroke-width": 1
+        }, staticLayer);
+        const text = create("text", {
+          x,
+          y: H - margin.bottom + 28,
+          fill: "#5f6c7b",
+          "font-family": "Segoe UI, sans-serif",
+          "font-size": 12,
+          "text-anchor": "middle"
+        }, staticLayer);
+        text.textContent = value >= 1000 ? `${(value / 1000).toFixed(value === 1000 ? 0 : 1)}k` : value;
+      });
+
+      create("line", {
+        x1: margin.left,
+        x2: margin.left,
+        y1: margin.top,
+        y2: H - margin.bottom,
+        stroke: "rgba(15, 23, 42, 0.12)",
+        "stroke-width": 1.2
+      }, staticLayer);
+      create("line", {
+        x1: margin.left,
+        x2: W - margin.right,
+        y1: H - margin.bottom,
+        y2: H - margin.bottom,
+        stroke: "rgba(15, 23, 42, 0.12)",
+        "stroke-width": 1.2
+      }, staticLayer);
+
+      const title = create("text", {
+        x: margin.left,
+        y: 30,
+        fill: "#102a43",
+        "font-family": "Georgia, serif",
+        "font-size": 18,
+        "font-weight": 700
+      }, staticLayer);
+      title.textContent = "Which genres hold quality while the market floods?";
+
+      const subtitle = create("text", {
+        x: margin.left,
+        y: 50,
+        fill: "#5f6c7b",
+        "font-family": "Segoe UI, sans-serif",
+        "font-size": 12.5
+      }, staticLayer);
+      subtitle.textContent = "X = annual release volume (log scale), Y = average positive review rate, bubble size = hit games.";
+
+      const yLabel = create("text", {
+        x: 24,
+        y: margin.top + innerH / 2,
+        fill: "#5f6c7b",
+        "font-family": "Segoe UI, sans-serif",
+        "font-size": 12.5,
+        transform: `rotate(-90 24 ${margin.top + innerH / 2})`,
+        "text-anchor": "middle"
+      }, staticLayer);
+      yLabel.textContent = "Average positive review percentage";
+
+      const xLabel = create("text", {
+        x: margin.left + innerW / 2,
+        y: H - 22,
+        fill: "#5f6c7b",
+        "font-family": "Segoe UI, sans-serif",
+        "font-size": 12.5,
+        "text-anchor": "middle"
+      }, staticLayer);
+      xLabel.textContent = "Games released in that genre that year (competition volume, log scale)";
+
+      create("rect", {
+        x: W - margin.right - 108,
+        y: margin.top + 12,
+        width: 88,
+        height: innerH - 24,
+        rx: 20,
+        fill: "rgba(29, 53, 87, 0.03)",
+        stroke: "rgba(29, 53, 87, 0.06)",
+        "stroke-dasharray": "4 6"
+      }, staticLayer);
+
+      const winnerLabel = create("text", {
+        x: W - margin.right - 64,
+        y: margin.top + 32,
+        fill: "#5f6c7b",
+        "font-family": "Segoe UI, sans-serif",
+        "font-size": 11,
+        "text-anchor": "middle"
+      }, staticLayer);
+      winnerLabel.textContent = "crowded";
+    }
+
+    function buildLegend() {
+      legend.innerHTML = "";
+      const intro = document.createElement("span");
+      intro.textContent = "Genre focus:";
+      legend.appendChild(intro);
+
+      GENRES.forEach(genre => {
+        const item = document.createElement("button");
+        item.type = "button";
+        item.className = "legend-item";
+        item.innerHTML = `<span class="swatch" style="background:${COLORS[genre]}"></span><span>${genre}</span>`;
+        item.addEventListener("click", () => {
+          state.selectedGenre = state.selectedGenre === genre ? null : genre;
+          render();
+        });
+        item.addEventListener("mouseenter", () => {
+          state.hoverGenre = genre;
+          render();
+        });
+        item.addEventListener("mouseleave", () => {
+          state.hoverGenre = null;
+          render();
+        });
+        legend.appendChild(item);
+      });
+    }
+
+    function buildTimeline() {
+      timelineChips.innerHTML = "";
+      KEY_YEARS.forEach(year => {
+        const chip = document.createElement("button");
+        chip.type = "button";
+        chip.className = "chip";
+        chip.textContent = year;
+        chip.addEventListener("click", () => {
+          state.yearFloat = year;
+          state.playing = false;
+          state.pauseUntil = 0;
+          state.lastTs = null;
+          render();
+        });
+        timelineChips.appendChild(chip);
+      });
+    }
+
+    function currentFocus() {
+      return state.selectedGenre || state.hoverGenre || null;
+    }
+
+    function showTooltip(evt, datum, genreOverride = null) {
+      const genre = genreOverride || datum.primary_genre;
+      const start = grouped[genre][0];
+      const end = grouped[genre][grouped[genre].length - 1];
+      tooltip.innerHTML = `
+        <strong>${genre}</strong>
+        Year: ${Math.round(datum.release_year)}<br />
+        Games released: ${formatCount(Math.round(datum.game_count))}<br />
+        Avg positive: ${formatPct(datum.avg_pos_pct)}<br />
+        Hit games: ${Math.round(datum.hit_count)}<br />
+        Hit rate: ${datum.hit_rate.toFixed(2)}%<br />
+        2013 → 2024 quality delta: ${(end.avg_pos_pct - start.avg_pos_pct >= 0 ? "+" : "") + (end.avg_pos_pct - start.avg_pos_pct).toFixed(1)} pts
+      `;
+      tooltip.classList.add("show");
+      moveTooltip(evt);
+    }
+
+    function moveTooltip(evt) {
+      tooltip.style.left = `${evt.clientX + 16}px`;
+      tooltip.style.top = `${evt.clientY + 16}px`;
+    }
+
+    function hideTooltip() {
+      tooltip.classList.remove("show");
+    }
+
+    function render() {
+      dynamicLayer.innerHTML = "";
+      hoverLayer.innerHTML = "";
+
+      const focus = currentFocus();
+      const currentYear = Math.round(state.yearFloat);
+      const progress = ((state.yearFloat - YEARS[0]) / (YEARS[YEARS.length - 1] - YEARS[0])) * 100;
+      yearBadge.textContent = currentYear;
+      progressFill.style.width = `${progress}%`;
+
+      [...timelineChips.children].forEach(node => {
+        node.classList.toggle("active", Number(node.textContent) === currentYear);
+      });
+
+      [...legend.querySelectorAll(".legend-item")].forEach((node, idx) => {
+        const genre = GENRES[idx];
+        node.classList.toggle("active", state.selectedGenre === genre);
+        node.classList.toggle("muted", !!focus && focus !== genre);
+      });
+
+      const currentSeries = GENRES.map(genre => getInterpolated(genre, state.yearFloat));
+
+      GENRES.forEach(genre => {
+        const baseOpacity = focus ? (focus === genre ? 1 : 0.14) : 0.68;
+        const fadeOpacity = focus ? (focus === genre ? 0.22 : 0.05) : 0.14;
+        const fullPath = pathString(grouped[genre]);
+        const histPath = pathString(getHistory(genre, state.yearFloat));
+        const color = COLORS[genre];
+
+        create("path", {
+          d: fullPath,
+          fill: "none",
+          stroke: color,
+          "stroke-width": 2,
+          opacity: fadeOpacity
+        }, dynamicLayer);
+
+        create("path", {
+          d: histPath,
+          fill: "none",
+          stroke: color,
+          "stroke-width": focus === genre ? 4.5 : 3,
+          "stroke-linecap": "round",
+          "stroke-linejoin": "round",
+          opacity: baseOpacity
+        }, dynamicLayer);
+
+        grouped[genre].forEach(point => {
+          const cx = xScale(point.game_count);
+          const cy = yScale(point.avg_pos_pct);
+          const dot = create("circle", {
+            cx,
+            cy,
+            r: focus === genre ? 4.6 : 3.4,
+            fill: color,
+            opacity: point.release_year <= currentYear ? baseOpacity * 0.68 : fadeOpacity * 0.9
+          }, dynamicLayer);
+          dot.addEventListener("mouseenter", evt => showTooltip(evt, point, genre));
+          dot.addEventListener("mousemove", moveTooltip);
+          dot.addEventListener("mouseleave", hideTooltip);
+        });
+
+        const current = getInterpolated(genre, state.yearFloat);
+        const cx = xScale(current.game_count);
+        const cy = yScale(current.avg_pos_pct);
+        create("circle", {
+          cx,
+          cy,
+          r: rScale(current.hit_count) + 4,
+          fill: color,
+          opacity: focus && focus !== genre ? 0.04 : 0.11,
+          filter: "url(#glow)"
+        }, dynamicLayer);
+        const bubble = create("circle", {
+          cx,
+          cy,
+          r: rScale(current.hit_count),
+          fill: color,
+          opacity: focus && focus !== genre ? 0.14 : 0.84,
+          stroke: "#ffffff",
+          "stroke-width": focus === genre ? 3 : 2
+        }, dynamicLayer);
+        bubble.addEventListener("mouseenter", evt => showTooltip(evt, current, genre));
+        bubble.addEventListener("mousemove", moveTooltip);
+        bubble.addEventListener("mouseleave", hideTooltip);
+
+        if ((focus === genre) || (!focus && current.release_year > 2023.6)) {
+          const label = create("text", {
+            x: cx + 10,
+            y: cy - 12,
+            fill: "#102a43",
+            "font-family": "Segoe UI, sans-serif",
+            "font-size": 11.5,
+            "font-weight": 700,
+            opacity: focus === genre ? 1 : 0.86
+          }, hoverLayer);
+          label.textContent = genre;
+        }
+      });
+
+      updateSummary(currentSeries, currentYear, focus);
+    }
+
+    function updateSummary(series, currentYear, focus) {
+      const mostCrowded = [...series].sort((a, b) => b.game_count - a.game_count)[0];
+      const highestQuality = [...series].sort((a, b) => b.avg_pos_pct - a.avg_pos_pct)[0];
+      const bestHitRate = [...series].sort((a, b) => b.hit_rate - a.hit_rate)[0];
+
+      if (focus) {
+        const current = getInterpolated(focus, state.yearFloat);
+        const start = grouped[focus][0];
+        const currentRounded = grouped[focus].find(d => d.release_year === currentYear) || current;
+        const qualityDelta = current.avg_pos_pct - start.avg_pos_pct;
+        const crowdDelta = current.game_count / start.game_count;
+        const hitDelta = current.hit_rate - start.hit_rate;
+
+        stat1Label.textContent = "Competition";
+        stat1Value.textContent = `${formatCount(Math.round(current.game_count))} releases`;
+        stat2Label.textContent = "Quality";
+        stat2Value.textContent = formatPct(current.avg_pos_pct);
+        stat3Label.textContent = "Hit rate";
+        stat3Value.textContent = `${current.hit_rate.toFixed(2)}%`;
+
+        summaryCopy.textContent =
+          `${focus} has moved from ${formatCount(start.game_count)} releases in 2013 to ${formatCount(Math.round(current.game_count))} by ${currentYear}. ` +
+          `That is a ${crowdDelta.toFixed(1)}x crowding increase, while average positivity ${qualityDelta >= 0 ? "rose" : "fell"} ` +
+          `${Math.abs(qualityDelta).toFixed(1)} points and hit rate changed ${hitDelta >= 0 ? "by +" : "by "}${hitDelta.toFixed(2)} points.`;
+
+        if (currentYear <= 2014) {
+          sceneCopy.textContent = `${focus} starts in a relatively uncrowded lane, before the flood really accelerates.`;
+        } else if (currentYear <= 2018) {
+          sceneCopy.textContent = `${focus} is being pushed rightward as release volume rises. The question is whether quality can hold.`;
+        } else if (currentYear <= 2022) {
+          sceneCopy.textContent = `${focus} is now deep in the crowded years. This is where resilient genres separate from overwhelmed ones.`;
+        } else {
+          sceneCopy.textContent = `${focus} reaches the late-market endpoint with competition fully expanded and the middle of the market already thinned out.`;
+        }
+        return;
+      }
+
+      stat1Label.textContent = "Most crowded";
+      stat1Value.textContent = mostCrowded.primary_genre;
+      stat2Label.textContent = "Highest quality";
+      stat2Value.textContent = highestQuality.primary_genre;
+      stat3Label.textContent = "Best hit rate";
+      stat3Value.textContent = bestHitRate.primary_genre;
+
+      sceneCopy.textContent =
+        currentYear <= 2014
+          ? "The field is still compressed. Genres begin close together before release volume fans outward."
+          : currentYear <= 2018
+          ? "Crowding accelerates and the trajectories start to separate into distinct genre survival paths."
+          : currentYear <= 2022
+          ? "This is the stress test period: most genres are far to the right, but only some keep climbing in quality."
+          : "By the endpoint, the right side is packed. Resilience now means holding quality inside an already flooded market.";
+
+      summaryCopy.textContent =
+        `In ${currentYear}, ${mostCrowded.primary_genre} is the most crowded lane with ${formatCount(Math.round(mostCrowded.game_count))} releases. ` +
+        `${highestQuality.primary_genre} currently posts the highest average positivity at ${formatPct(highestQuality.avg_pos_pct)}, ` +
+        `while ${bestHitRate.primary_genre} keeps the strongest hit rate at ${bestHitRate.hit_rate.toFixed(2)}%.`;
+    }
+
+    function startPlayback(reset = false) {
+      if (reset) {
+        state.yearFloat = YEARS[0];
+        state.pauseUntil = 0;
+        state.lastTs = null;
+      }
+      state.playing = true;
+      if (!state.raf) {
+        state.raf = requestAnimationFrame(tick);
+      }
+    }
+
+    function tick(ts) {
+      if (!state.playing) {
+        state.raf = null;
+        return;
+      }
+      if (state.lastTs == null) {
+        state.lastTs = ts;
+      }
+      const dt = ts - state.lastTs;
+      state.lastTs = ts;
+
+      if (state.pauseUntil && ts < state.pauseUntil) {
+        render();
+        state.raf = requestAnimationFrame(tick);
+        return;
+      }
+
+      const speed = 0.00105;
+      const prevYear = state.yearFloat;
+      state.yearFloat = Math.min(YEARS[YEARS.length - 1], state.yearFloat + dt * speed);
+
+      for (const year of KEY_YEARS) {
+        if (prevYear < year && state.yearFloat >= year) {
+          state.yearFloat = year;
+          state.pauseUntil = ts + PAUSES[year];
+          break;
+        }
+      }
+
+      if (state.yearFloat >= YEARS[YEARS.length - 1]) {
+        state.yearFloat = YEARS[YEARS.length - 1];
+        state.playing = false;
+      }
+
+      render();
+      state.raf = requestAnimationFrame(tick);
+    }
+
+    replayBtn.addEventListener("click", () => startPlayback(true));
+
+    drawStatic();
+    buildLegend();
+    buildTimeline();
+    render();
+
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting && !state.hasStarted) {
+          state.hasStarted = true;
+          startPlayback(true);
+        }
+      });
+    }, { threshold: 0.35 });
+
+    observer.observe(document.querySelector(".scene"));
+  </script>
+</body>
+</html>

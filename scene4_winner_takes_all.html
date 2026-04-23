@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scene 4 - Winner Takes All</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --surface: #ffffff;
+      --line: rgba(15, 23, 42, 0.12);
+      --grid: rgba(15, 23, 42, 0.08);
+      --text: #12202f;
+      --muted: #5f6c7b;
+      --curve: #c1121f;
+      --curve-hot: #7f1d1d;
+      --curve-soft: rgba(193, 18, 31, 0.12);
+      --eq: #9aa5b1;
+      --accent: #1d3557;
+      --highlight: #f4a261;
+      --glow: rgba(244, 162, 97, 0.3);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: Georgia, "Times New Roman", serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .scene {
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: 18px 18px 12px;
+      background: var(--surface);
+    }
+
+    .eyebrow {
+      font: 600 0.8rem/1.2 "Segoe UI", sans-serif;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    h1 {
+      font-size: clamp(1.8rem, 3vw, 2.9rem);
+      line-height: 1.05;
+      color: #102a43;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      max-width: 840px;
+      color: var(--muted);
+      font-size: 1rem;
+      line-height: 1.6;
+      margin-bottom: 18px;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: 1.3fr 1fr;
+      gap: 14px;
+      margin-bottom: 12px;
+    }
+
+    .control-card,
+    .summary-card {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(248,250,252,0.96));
+      padding: 14px;
+    }
+
+    .narrative-row,
+    .timeline,
+    .stat-label,
+    .stat-value,
+    .hint,
+    .legend,
+    .year-badge,
+    .progress-meta {
+      font-family: "Segoe UI", sans-serif;
+    }
+
+    .narrative-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .year-badge {
+      color: var(--accent);
+      font-size: 1.25rem;
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .play-btn {
+      border: 1px solid rgba(29, 53, 87, 0.16);
+      background: #f7f9fb;
+      color: var(--accent);
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 140ms ease, transform 140ms ease;
+    }
+
+    .play-btn:hover {
+      background: #eef3f8;
+      transform: translateY(-1px);
+    }
+
+    .progress-shell {
+      position: relative;
+      height: 12px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, rgba(244, 162, 97, 0.12), rgba(193, 18, 31, 0.12));
+      overflow: hidden;
+      margin-bottom: 10px;
+    }
+
+    .progress-fill {
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: 0%;
+      background: linear-gradient(90deg, #f4a261, #c1121f);
+      border-radius: 999px;
+      transition: width 180ms ease;
+    }
+
+    .progress-pulse {
+      animation: scene4Pulse 1200ms ease-in-out infinite;
+      box-shadow: 0 0 0 0 rgba(193, 18, 31, 0.25);
+    }
+
+    @keyframes scene4Pulse {
+      0% {
+        filter: saturate(1);
+        box-shadow: 0 0 0 0 rgba(193, 18, 31, 0.25);
+      }
+      50% {
+        filter: saturate(1.35);
+        box-shadow: 0 0 0 10px rgba(193, 18, 31, 0.04);
+      }
+      100% {
+        filter: saturate(1);
+        box-shadow: 0 0 0 0 rgba(193, 18, 31, 0.0);
+      }
+    }
+
+    .timeline {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+
+    .year-chip {
+      border: 1px solid rgba(15, 23, 42, 0.08);
+      border-radius: 999px;
+      padding: 6px 10px;
+      background: #fbfcfd;
+      font-size: 0.78rem;
+      color: var(--muted);
+      transition: all 180ms ease;
+    }
+
+    .year-chip.active {
+      color: #fff;
+      background: var(--curve);
+      border-color: rgba(193, 18, 31, 0.14);
+      transform: translateY(-1px);
+    }
+
+    .progress-meta {
+      color: var(--muted);
+      font-size: 0.8rem;
+    }
+
+    .summary-card {
+      display: grid;
+      gap: 10px;
+      align-content: start;
+    }
+
+    .summary-title {
+      font: 700 0.95rem/1.3 "Segoe UI", sans-serif;
+      color: #102a43;
+    }
+
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .stat {
+      border-radius: 14px;
+      border: 1px solid rgba(15, 23, 42, 0.08);
+      background: rgba(255,255,255,0.72);
+      padding: 10px;
+    }
+
+    .stat-label {
+      color: var(--muted);
+      font-size: 0.76rem;
+      margin-bottom: 6px;
+    }
+
+    .stat-value {
+      font: 800 1.18rem/1.1 "Segoe UI", sans-serif;
+      color: #102a43;
+    }
+
+    .hint {
+      color: var(--muted);
+      font-size: 0.8rem;
+    }
+
+    .legend {
+      display: flex;
+      gap: 18px;
+      align-items: center;
+      color: var(--muted);
+      font-size: 0.8rem;
+      margin-bottom: 10px;
+    }
+
+    .legend-item {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .swatch {
+      width: 12px;
+      height: 12px;
+      border-radius: 999px;
+    }
+
+    #vizWrap {
+      width: 100%;
+      border-top: 1px solid rgba(15, 23, 42, 0.05);
+      padding-top: 12px;
+    }
+
+    svg {
+      display: block;
+      width: 100%;
+      overflow: visible;
+    }
+
+    .axis text,
+    .small-label {
+      fill: var(--muted);
+      font: 11px "Segoe UI", sans-serif;
+    }
+
+    .axis path,
+    .axis line {
+      stroke: var(--line);
+    }
+
+    .panel-title {
+      font: 700 15px "Segoe UI", sans-serif;
+      fill: #102a43;
+    }
+
+    .panel-subtitle {
+      font: 11px "Segoe UI", sans-serif;
+      fill: var(--muted);
+    }
+
+    .tooltip {
+      position: fixed;
+      display: none;
+      pointer-events: none;
+      z-index: 999;
+      background: rgba(255, 255, 255, 0.98);
+      border: 1px solid rgba(15, 23, 42, 0.12);
+      box-shadow: 0 14px 40px rgba(15, 23, 42, 0.10);
+      border-radius: 12px;
+      padding: 10px 12px;
+      color: var(--text);
+      font: 12px/1.55 "Segoe UI", sans-serif;
+      min-width: 184px;
+    }
+
+    .tooltip.show {
+      display: block;
+    }
+
+    @media (max-width: 860px) {
+      .scene {
+        padding: 10px 10px 6px;
+      }
+
+      .controls {
+        grid-template-columns: 1fr;
+      }
+
+      .stat-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .narrative-row {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <section class="scene" id="sceneRoot">
+    <div class="eyebrow">Scene 4</div>
+    <h1>Winner Takes All</h1>
+    <p class="subtitle">
+      This scene now runs like a short visual argument: the curve descends by itself, the inequality wedge deepens, particles rush into the winner zone, and the camera closes in on the final bend where almost all attention gets captured.
+    </p>
+
+    <div class="controls">
+      <div class="control-card">
+        <div class="narrative-row">
+          <div>
+            <div style="font:700 0.95rem/1.3 'Segoe UI', sans-serif; color:#102a43;">Autoplay Narrative</div>
+            <div class="progress-meta" id="phaseText">Starting from a still unequal 2013 baseline.</div>
+          </div>
+          <div style="display:flex; gap:12px; align-items:center;">
+            <div class="year-badge" id="yearBadge">2013</div>
+            <button class="play-btn" id="playBtn">Replay</button>
+          </div>
+        </div>
+        <div class="progress-shell">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div class="timeline">
+          <div class="year-chip active" data-year="2013">2013</div>
+          <div class="year-chip" data-year="2016">2016</div>
+          <div class="year-chip" data-year="2019">2019</div>
+          <div class="year-chip" data-year="2022">2022</div>
+          <div class="year-chip" data-year="2024">2024</div>
+        </div>
+        <div class="progress-meta">You do not need to scrub. The scene auto-advances and pauses at key years to let the numbers breathe.</div>
+      </div>
+
+      <div class="summary-card">
+        <div class="summary-title">Concentration at a glance</div>
+        <div class="stat-grid">
+          <div class="stat">
+            <div class="stat-label">Gini coefficient</div>
+            <div class="stat-value" id="giniStat">0.984</div>
+          </div>
+          <div class="stat">
+            <div class="stat-label">Top 10% capture</div>
+            <div class="stat-value" id="top10Stat">99.4%</div>
+          </div>
+          <div class="stat">
+            <div class="stat-label">Bottom 90% capture</div>
+            <div class="stat-value" id="bottom90Stat">0.7%</div>
+          </div>
+        </div>
+        <div class="hint" id="summaryHint">
+          By 2013, the bottom 90% of games already shared less than 1% of all review attention.
+        </div>
+      </div>
+    </div>
+
+    <div class="legend">
+      <div class="legend-item"><span class="swatch" style="background: var(--curve);"></span><span>Current concentration curve</span></div>
+      <div class="legend-item"><span class="swatch" style="background: var(--eq);"></span><span>Perfect equality</span></div>
+      <div class="legend-item"><span class="swatch" style="background: var(--highlight);"></span><span>Inequality wedge and winner zone</span></div>
+    </div>
+
+    <div id="vizWrap"></div>
+  </section>
+
+  <div class="tooltip" id="tooltip"></div>
+
+  <script>
+    const YEARS = [2013, 2016, 2019, 2022, 2024];
+    const SERIES = [
+      { year: 2013, points: [{"x":0,"y":0},{"x":1.1,"y":0},{"x":1.98,"y":0},{"x":3.08,"y":0},{"x":3.96,"y":0},{"x":5.05,"y":0},{"x":5.93,"y":0},{"x":7.03,"y":0},{"x":7.91,"y":0},{"x":9.01,"y":0},{"x":10.11,"y":0},{"x":10.99,"y":0},{"x":12.09,"y":0},{"x":12.97,"y":0},{"x":14.07,"y":0},{"x":14.95,"y":0},{"x":16.04,"y":0},{"x":16.92,"y":0},{"x":18.02,"y":0},{"x":18.9,"y":0},{"x":20,"y":0},{"x":21.1,"y":0},{"x":21.98,"y":0},{"x":23.08,"y":0},{"x":23.96,"y":0},{"x":25.05,"y":0},{"x":25.93,"y":0},{"x":27.03,"y":0},{"x":27.91,"y":0},{"x":29.01,"y":0},{"x":29.89,"y":0},{"x":30.99,"y":0},{"x":32.09,"y":0},{"x":32.97,"y":0},{"x":34.07,"y":0},{"x":34.95,"y":0},{"x":36.04,"y":0},{"x":36.92,"y":0},{"x":38.02,"y":0},{"x":38.9,"y":0},{"x":40,"y":0},{"x":41.1,"y":0},{"x":41.98,"y":0},{"x":43.08,"y":0},{"x":43.96,"y":0},{"x":45.05,"y":0},{"x":45.93,"y":0},{"x":47.03,"y":0},{"x":47.91,"y":0},{"x":49.01,"y":0},{"x":50.11,"y":0},{"x":50.99,"y":0},{"x":52.09,"y":0},{"x":52.97,"y":0},{"x":54.07,"y":0},{"x":54.95,"y":0},{"x":56.04,"y":0},{"x":56.92,"y":0},{"x":58.02,"y":0},{"x":58.9,"y":0},{"x":60,"y":0},{"x":61.1,"y":0},{"x":61.98,"y":0},{"x":63.08,"y":0},{"x":63.96,"y":0},{"x":65.05,"y":0},{"x":65.93,"y":0},{"x":67.03,"y":0},{"x":67.91,"y":0},{"x":69.01,"y":0},{"x":69.89,"y":0},{"x":70.99,"y":0},{"x":72.09,"y":0},{"x":72.97,"y":0},{"x":74.07,"y":0},{"x":74.95,"y":0},{"x":76.04,"y":0},{"x":76.92,"y":0},{"x":78.02,"y":0},{"x":78.9,"y":0},{"x":80,"y":0},{"x":81.1,"y":0},{"x":81.98,"y":0},{"x":83.08,"y":0},{"x":83.96,"y":0.01},{"x":85.05,"y":0.04},{"x":85.93,"y":0.1},{"x":87.03,"y":0.21},{"x":87.91,"y":0.32},{"x":89.01,"y":0.49},{"x":90.11,"y":0.69},{"x":90.99,"y":0.87},{"x":92.09,"y":1.19},{"x":92.97,"y":1.57},{"x":94.07,"y":2.15},{"x":94.95,"y":2.83},{"x":96.04,"y":4.2},{"x":96.92,"y":6.0},{"x":98.02,"y":9.94},{"x":98.9,"y":16.2},{"x":100,"y":100}]},
+      { year: 2016, points: [{"x":0,"y":0},{"x":0.99,"y":0},{"x":2,"y":0},{"x":3,"y":0},{"x":4.01,"y":0},{"x":5,"y":0},{"x":5.99,"y":0},{"x":7,"y":0},{"x":8,"y":0},{"x":9.01,"y":0},{"x":10,"y":0},{"x":10.99,"y":0},{"x":12,"y":0},{"x":13,"y":0},{"x":14.01,"y":0},{"x":15,"y":0},{"x":15.99,"y":0},{"x":17,"y":0},{"x":18,"y":0},{"x":19.01,"y":0},{"x":20,"y":0},{"x":20.99,"y":0},{"x":22,"y":0},{"x":23,"y":0},{"x":24.01,"y":0},{"x":25,"y":0},{"x":25.99,"y":0},{"x":27,"y":0},{"x":28,"y":0},{"x":29.01,"y":0},{"x":30,"y":0},{"x":30.99,"y":0},{"x":32,"y":0},{"x":33,"y":0},{"x":34.01,"y":0},{"x":35,"y":0},{"x":35.99,"y":0},{"x":37,"y":0},{"x":38,"y":0},{"x":39.01,"y":0},{"x":40,"y":0},{"x":40.99,"y":0},{"x":42,"y":0},{"x":43,"y":0},{"x":44.01,"y":0},{"x":45,"y":0},{"x":45.99,"y":0},{"x":47,"y":0},{"x":48,"y":0},{"x":49.01,"y":0},{"x":50,"y":0},{"x":50.99,"y":0},{"x":52,"y":0},{"x":53,"y":0},{"x":54.01,"y":0},{"x":55,"y":0},{"x":55.99,"y":0},{"x":57,"y":0},{"x":58,"y":0},{"x":59.01,"y":0},{"x":60,"y":0},{"x":60.99,"y":0},{"x":62,"y":0},{"x":63,"y":0},{"x":64.01,"y":0},{"x":65,"y":0},{"x":65.99,"y":0},{"x":67,"y":0},{"x":68,"y":0},{"x":69.01,"y":0},{"x":70,"y":0},{"x":70.99,"y":0},{"x":72,"y":0},{"x":73,"y":0},{"x":74.01,"y":0},{"x":75,"y":0},{"x":75.99,"y":0},{"x":77,"y":0},{"x":78,"y":0},{"x":79.01,"y":0},{"x":80,"y":0},{"x":80.99,"y":0},{"x":82,"y":0},{"x":83,"y":0.01},{"x":84.01,"y":0.03},{"x":85,"y":0.06},{"x":85.99,"y":0.09},{"x":87,"y":0.15},{"x":88,"y":0.21},{"x":89.01,"y":0.31},{"x":90,"y":0.42},{"x":90.99,"y":0.57},{"x":92,"y":0.78},{"x":93,"y":1.04},{"x":94.01,"y":1.39},{"x":95,"y":1.86},{"x":95.99,"y":2.51},{"x":97,"y":3.56},{"x":98,"y":5.37},{"x":99.01,"y":9.99},{"x":100,"y":100}]},
+      { year: 2019, points: [{"x":0,"y":0},{"x":1,"y":0},{"x":2.01,"y":0},{"x":3,"y":0},{"x":4,"y":0},{"x":5.01,"y":0},{"x":6,"y":0},{"x":7,"y":0},{"x":8.01,"y":0},{"x":9,"y":0},{"x":10,"y":0},{"x":11.01,"y":0},{"x":12,"y":0},{"x":13,"y":0},{"x":13.99,"y":0},{"x":15,"y":0},{"x":16,"y":0},{"x":16.99,"y":0},{"x":18,"y":0},{"x":19,"y":0},{"x":19.99,"y":0},{"x":21,"y":0},{"x":22,"y":0},{"x":22.99,"y":0},{"x":24,"y":0},{"x":25,"y":0},{"x":26,"y":0},{"x":27.01,"y":0},{"x":28,"y":0},{"x":29,"y":0},{"x":30.01,"y":0},{"x":31,"y":0},{"x":32,"y":0},{"x":33.01,"y":0},{"x":34,"y":0},{"x":35,"y":0},{"x":36.01,"y":0},{"x":37,"y":0},{"x":38,"y":0},{"x":38.99,"y":0},{"x":40,"y":0},{"x":41,"y":0},{"x":41.99,"y":0},{"x":43,"y":0},{"x":44,"y":0},{"x":44.99,"y":0},{"x":46,"y":0},{"x":47,"y":0},{"x":47.99,"y":0},{"x":49,"y":0},{"x":50,"y":0},{"x":50.99,"y":0},{"x":52,"y":0},{"x":53,"y":0},{"x":54.01,"y":0},{"x":55,"y":0},{"x":55.99,"y":0},{"x":57,"y":0},{"x":58,"y":0},{"x":59.01,"y":0},{"x":60,"y":0},{"x":60.99,"y":0},{"x":62,"y":0},{"x":63,"y":0},{"x":64.01,"y":0},{"x":65,"y":0},{"x":65.99,"y":0},{"x":67,"y":0},{"x":68,"y":0},{"x":69.01,"y":0},{"x":70,"y":0},{"x":70.99,"y":0},{"x":72,"y":0},{"x":73,"y":0},{"x":74.01,"y":0},{"x":75,"y":0},{"x":75.99,"y":0},{"x":77,"y":0},{"x":78,"y":0},{"x":79.01,"y":0},{"x":80,"y":0},{"x":80.99,"y":0},{"x":82,"y":0.01},{"x":83,"y":0.02},{"x":84.01,"y":0.03},{"x":85,"y":0.04},{"x":85.99,"y":0.06},{"x":87,"y":0.09},{"x":88,"y":0.12},{"x":89.01,"y":0.17},{"x":90,"y":0.24},{"x":90.99,"y":0.31},{"x":92,"y":0.42},{"x":93,"y":0.56},{"x":94.01,"y":0.77},{"x":95,"y":1.07},{"x":95.99,"y":1.47},{"x":97,"y":2.13},{"x":98,"y":3.38},{"x":99.01,"y":7.78},{"x":100,"y":100}]},
+      { year: 2022, points: [{"x":0,"y":0},{"x":1,"y":0},{"x":2,"y":0},{"x":3,"y":0},{"x":4,"y":0},{"x":5,"y":0},{"x":6,"y":0},{"x":7,"y":0},{"x":8,"y":0},{"x":9,"y":0},{"x":10,"y":0},{"x":11,"y":0},{"x":12,"y":0},{"x":13,"y":0},{"x":14,"y":0},{"x":15,"y":0},{"x":16,"y":0},{"x":17,"y":0},{"x":18,"y":0},{"x":19,"y":0},{"x":20,"y":0},{"x":21,"y":0},{"x":22,"y":0},{"x":23,"y":0},{"x":24,"y":0},{"x":25,"y":0},{"x":26,"y":0},{"x":27,"y":0},{"x":28,"y":0},{"x":29,"y":0},{"x":30,"y":0},{"x":31,"y":0},{"x":32,"y":0},{"x":33,"y":0},{"x":34,"y":0},{"x":35,"y":0},{"x":36,"y":0},{"x":37,"y":0},{"x":38,"y":0},{"x":39,"y":0},{"x":40,"y":0},{"x":41,"y":0},{"x":42,"y":0},{"x":43,"y":0},{"x":44,"y":0},{"x":45,"y":0},{"x":46,"y":0},{"x":47,"y":0},{"x":48,"y":0},{"x":49,"y":0},{"x":50,"y":0},{"x":51,"y":0},{"x":52,"y":0},{"x":53,"y":0},{"x":54,"y":0},{"x":55,"y":0},{"x":56,"y":0},{"x":57,"y":0},{"x":58,"y":0},{"x":59,"y":0},{"x":60,"y":0},{"x":61,"y":0},{"x":62,"y":0},{"x":63,"y":0},{"x":64,"y":0},{"x":65,"y":0},{"x":66,"y":0},{"x":67,"y":0},{"x":68,"y":0},{"x":69,"y":0},{"x":70,"y":0},{"x":71,"y":0},{"x":72,"y":0},{"x":73,"y":0},{"x":74,"y":0},{"x":75,"y":0},{"x":76,"y":0},{"x":77,"y":0},{"x":78,"y":0},{"x":79,"y":0},{"x":80,"y":0},{"x":81,"y":0},{"x":82,"y":0},{"x":83,"y":0},{"x":84,"y":0.01},{"x":85,"y":0.01},{"x":86,"y":0.02},{"x":87,"y":0.03},{"x":88,"y":0.05},{"x":89,"y":0.07},{"x":90,"y":0.1},{"x":91,"y":0.15},{"x":92,"y":0.2},{"x":93,"y":0.29},{"x":94,"y":0.41},{"x":95,"y":0.61},{"x":96,"y":0.91},{"x":97,"y":1.4},{"x":98,"y":2.34},{"x":99,"y":6.7},{"x":100,"y":100}]},
+      { year: 2024, points: [{"x":0,"y":0},{"x":1,"y":0},{"x":2,"y":0},{"x":3,"y":0},{"x":4,"y":0},{"x":5,"y":0},{"x":6,"y":0},{"x":7,"y":0},{"x":8,"y":0},{"x":9,"y":0},{"x":10,"y":0},{"x":11,"y":0},{"x":12,"y":0},{"x":13,"y":0},{"x":14,"y":0},{"x":15,"y":0},{"x":16,"y":0},{"x":17,"y":0},{"x":18,"y":0},{"x":19,"y":0},{"x":20,"y":0},{"x":21,"y":0},{"x":22,"y":0},{"x":23,"y":0},{"x":24,"y":0},{"x":25,"y":0},{"x":26,"y":0},{"x":27,"y":0},{"x":28,"y":0},{"x":29,"y":0},{"x":30,"y":0},{"x":31,"y":0},{"x":32,"y":0},{"x":33,"y":0},{"x":34,"y":0},{"x":35,"y":0},{"x":36,"y":0},{"x":37,"y":0},{"x":38,"y":0},{"x":39,"y":0},{"x":40,"y":0},{"x":41,"y":0},{"x":42,"y":0},{"x":43,"y":0},{"x":44,"y":0},{"x":45,"y":0},{"x":46,"y":0},{"x":47,"y":0},{"x":48,"y":0},{"x":49,"y":0},{"x":50,"y":0},{"x":51,"y":0},{"x":52,"y":0},{"x":53,"y":0},{"x":54,"y":0},{"x":55,"y":0},{"x":56,"y":0},{"x":57,"y":0},{"x":58,"y":0},{"x":59,"y":0},{"x":60,"y":0},{"x":61,"y":0},{"x":62,"y":0},{"x":63,"y":0},{"x":64,"y":0},{"x":65,"y":0},{"x":66,"y":0},{"x":67,"y":0},{"x":68,"y":0},{"x":69,"y":0},{"x":70,"y":0},{"x":71,"y":0},{"x":72,"y":0},{"x":73,"y":0},{"x":74,"y":0},{"x":75,"y":0},{"x":76,"y":0},{"x":77,"y":0},{"x":78,"y":0},{"x":79,"y":0},{"x":80,"y":0},{"x":81,"y":0},{"x":82,"y":0},{"x":83,"y":0},{"x":84,"y":0},{"x":85,"y":0},{"x":86,"y":0.01},{"x":87,"y":0.01},{"x":88,"y":0.02},{"x":89,"y":0.03},{"x":90,"y":0.05},{"x":91,"y":0.08},{"x":92,"y":0.12},{"x":93,"y":0.19},{"x":94,"y":0.29},{"x":95,"y":0.47},{"x":96,"y":0.77},{"x":97,"y":1.32},{"x":98,"y":2.48},{"x":99,"y":6.68},{"x":100,"y":100}]}
+    ];
+
+    const SUMMARY = [
+      { year: 2013, gini: 0.984, top10: 99.4, bottom90: 0.7, phase: "Starting from a still unequal 2013 baseline." },
+      { year: 2016, gini: 0.991, top10: 99.6, bottom90: 0.4, phase: "By 2016, the curve sinks further and the bottom 90% loses even more ground." },
+      { year: 2019, gini: 0.991, top10: 99.8, bottom90: 0.2, phase: "By 2019, almost all visible motion pulls toward the winner zone." },
+      { year: 2022, gini: 0.996, top10: 99.9, bottom90: 0.1, phase: "2022 is the rupture point: the inequality wedge pulses as the market tears open." },
+      { year: 2024, gini: 0.990, top10: 100.0, bottom90: 0.0, phase: "The camera now zooms into the final bend, where success has become vanishingly concentrated." }
+    ];
+
+    const timelinePlan = [
+      { type: "move", from: 2013, to: 2016, duration: 1800 },
+      { type: "pause", year: 2016, duration: 1200 },
+      { type: "move", from: 2016, to: 2019, duration: 1700 },
+      { type: "pause", year: 2019, duration: 1200 },
+      { type: "move", from: 2019, to: 2022, duration: 1800 },
+      { type: "pause", year: 2022, duration: 1500, pulse: true },
+      { type: "move", from: 2022, to: 2024, duration: 1400 },
+      { type: "pause", year: 2024, duration: 1800, zoom: true }
+    ];
+
+    const phaseText = document.getElementById("phaseText");
+    const yearBadge = document.getElementById("yearBadge");
+    const progressFill = document.getElementById("progressFill");
+    const playBtn = document.getElementById("playBtn");
+    const yearChips = Array.from(document.querySelectorAll(".year-chip"));
+    const giniStat = document.getElementById("giniStat");
+    const top10Stat = document.getElementById("top10Stat");
+    const bottom90Stat = document.getElementById("bottom90Stat");
+    const summaryHint = document.getElementById("summaryHint");
+    const tooltip = document.getElementById("tooltip");
+    const sceneRoot = document.getElementById("sceneRoot");
+
+    const styles = getComputedStyle(document.documentElement);
+    const curveColor = styles.getPropertyValue("--curve").trim();
+    const curveHot = styles.getPropertyValue("--curve-hot").trim();
+    const curveSoft = styles.getPropertyValue("--curve-soft").trim();
+    const eqColor = styles.getPropertyValue("--eq").trim();
+    const accentColor = styles.getPropertyValue("--accent").trim();
+    const highlightColor = styles.getPropertyValue("--highlight").trim();
+    const mutedColor = styles.getPropertyValue("--muted").trim();
+
+    function interp(a, b, t) {
+      return a + (b - a) * t;
+    }
+
+    function showTip(html, event) {
+      tooltip.innerHTML = html;
+      tooltip.classList.add("show");
+      moveTip(event);
+    }
+
+    function moveTip(event) {
+      tooltip.style.left = Math.min(event.clientX + 16, window.innerWidth - 206) + "px";
+      tooltip.style.top = Math.max(12, event.clientY - 12) + "px";
+    }
+
+    function hideTip() {
+      tooltip.classList.remove("show");
+    }
+
+    function getFrame(year) {
+      const clamped = Math.max(YEARS[0], Math.min(YEARS[YEARS.length - 1], year));
+      let lowerIdx = 0;
+      for (let i = 0; i < YEARS.length; i += 1) {
+        if (YEARS[i] <= clamped) {
+          lowerIdx = i;
+        }
+      }
+      const upperIdx = Math.min(YEARS.length - 1, lowerIdx + 1);
+      const lowerYear = YEARS[lowerIdx];
+      const upperYear = YEARS[upperIdx];
+      const span = Math.max(1, upperYear - lowerYear);
+      const t = lowerYear === upperYear ? 0 : (clamped - lowerYear) / span;
+
+      return {
+        year: clamped,
+        points: SERIES[lowerIdx].points.map((point, i) => ({
+          x: point.x,
+          y: interp(point.y, SERIES[upperIdx].points[i].y, t)
+        })),
+        summary: {
+          gini: interp(SUMMARY[lowerIdx].gini, SUMMARY[upperIdx].gini, t),
+          top10: interp(SUMMARY[lowerIdx].top10, SUMMARY[upperIdx].top10, t),
+          bottom90: interp(SUMMARY[lowerIdx].bottom90, SUMMARY[upperIdx].bottom90, t)
+        }
+      };
+    }
+
+    function getPhaseCopy(year) {
+      let nearest = SUMMARY[0];
+      let minDist = Infinity;
+      SUMMARY.forEach((entry) => {
+        const dist = Math.abs(entry.year - year);
+        if (dist < minDist) {
+          minDist = dist;
+          nearest = entry;
+        }
+      });
+      return nearest.phase;
+    }
+
+    function seededRandom(seed) {
+      const value = Math.sin(seed * 927.13) * 43758.5453;
+      return value - Math.floor(value);
+    }
+
+    function buildViz() {
+      const wrap = document.getElementById("vizWrap");
+      const width = Math.max(wrap.clientWidth || 980, 620);
+      const height = 650;
+      const margin = { top: 24, right: 34, bottom: 58, left: 70 };
+      const innerWidth = width - margin.left - margin.right;
+      const innerHeight = height - margin.top - margin.bottom;
+
+      const svg = d3.select(wrap).append("svg").attr("viewBox", `0 0 ${width} ${height}`);
+      const defs = svg.append("defs");
+      const glow = defs.append("filter").attr("id", "scene4Glow");
+      glow.append("feGaussianBlur").attr("stdDeviation", 7).attr("result", "blur");
+      const merge = glow.append("feMerge");
+      merge.append("feMergeNode").attr("in", "blur");
+      merge.append("feMergeNode").attr("in", "SourceGraphic");
+
+      const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+      const x = d3.scaleLinear().domain([0, 100]).range([0, innerWidth]);
+      const y = d3.scaleLinear().domain([0, 100]).range([innerHeight, 0]);
+
+      g.append("g")
+        .attr("class", "axis")
+        .call(d3.axisLeft(y).ticks(5).tickSize(-innerWidth).tickFormat((d) => `${d}%`))
+        .call((axis) => axis.select(".domain").remove())
+        .call((axis) => axis.selectAll(".tick line").attr("stroke", "rgba(15, 23, 42, 0.08)"));
+
+      g.append("g")
+        .attr("class", "axis")
+        .attr("transform", `translate(0,${innerHeight})`)
+        .call(d3.axisBottom(x).ticks(5).tickFormat((d) => `${d}%`))
+        .call((axis) => axis.select(".domain").remove())
+        .call((axis) => axis.selectAll(".tick line").remove());
+
+      g.append("text").attr("class", "panel-title").attr("x", 0).attr("y", -2).text("The attention curve bends away from equality");
+      g.append("text").attr("class", "panel-subtitle").attr("x", 0).attr("y", 16).text("Particles represent dispersed attention. With each year, they get pulled into the winner zone on the far right.");
+
+      g.append("path")
+        .attr("d", d3.line().x((d) => x(d.x)).y((d) => y(d.y))([{ x: 0, y: 0 }, { x: 100, y: 100 }]))
+        .attr("fill", "none")
+        .attr("stroke", eqColor)
+        .attr("stroke-width", 2)
+        .attr("stroke-dasharray", "6, 6");
+
+      const clipId = "scene4PlotClip";
+      defs.append("clipPath")
+        .attr("id", clipId)
+        .append("rect")
+        .attr("x", 0)
+        .attr("y", 0)
+        .attr("width", innerWidth)
+        .attr("height", innerHeight);
+
+      const plotContent = g.append("g").attr("clip-path", `url(#${clipId})`);
+      const areaPath = plotContent.append("path").attr("stroke", "none");
+      const winnerZone = plotContent.append("rect")
+        .attr("y", 0)
+        .attr("height", innerHeight)
+        .attr("fill", "rgba(244, 162, 97, 0.07)");
+      const curvePath = plotContent.append("path")
+        .attr("fill", "none")
+        .attr("stroke-width", 3.4)
+        .attr("stroke-linecap", "round");
+
+      const particleLayer = plotContent.append("g");
+      const particleData = d3.range(130).map((i) => ({
+        id: i,
+        startX: seededRandom(i + 1) * 88,
+        startY: seededRandom(i + 41) * 100,
+        endX: 90 + seededRandom(i + 91) * 9.2,
+        endY: 10 + seededRandom(i + 121) * 90,
+        size: 2.1 + seededRandom(i + 11) * 2.1
+      }));
+      const particles = particleLayer.selectAll("circle")
+        .data(particleData)
+        .enter()
+        .append("circle")
+        .attr("filter", "url(#scene4Glow)")
+        .attr("opacity", 0.55);
+
+      const focusLine = plotContent.append("line")
+        .attr("stroke", highlightColor)
+        .attr("stroke-width", 1.6)
+        .attr("stroke-dasharray", "5,5");
+      const focusDot = plotContent.append("circle")
+        .attr("r", 6)
+        .attr("fill", highlightColor)
+        .attr("stroke", "#fff")
+        .attr("stroke-width", 2);
+
+      const callout = g.append("g");
+      const calloutBubble = callout.append("rect")
+        .attr("rx", 14)
+        .attr("fill", "rgba(255,255,255,0.96)")
+        .attr("stroke", "rgba(15, 23, 42, 0.12)")
+        .attr("filter", "url(#scene4Glow)");
+      const calloutText = callout.append("text")
+        .attr("font-family", "Segoe UI, sans-serif")
+        .attr("font-size", 12)
+        .attr("fill", accentColor);
+
+      const headline = g.append("text")
+        .attr("x", innerWidth - 6)
+        .attr("y", 10)
+        .attr("text-anchor", "end")
+        .attr("font-family", "Segoe UI, sans-serif")
+        .attr("font-size", 28)
+        .attr("font-weight", 800)
+        .attr("fill", curveColor);
+      const subline = g.append("text")
+        .attr("x", innerWidth - 6)
+        .attr("y", 30)
+        .attr("text-anchor", "end")
+        .attr("font-family", "Segoe UI, sans-serif")
+        .attr("font-size", 12)
+        .attr("fill", mutedColor);
+
+      const footer = svg.append("text")
+        .attr("x", width - 22)
+        .attr("y", height - 12)
+        .attr("text-anchor", "end")
+        .attr("font-family", "Segoe UI, sans-serif")
+        .attr("font-size", 12)
+        .attr("fill", mutedColor)
+        .text("Final zoom reveals how little room is left outside the winner zone.");
+
+      const overlay = g.append("rect")
+        .attr("x", 0)
+        .attr("y", 0)
+        .attr("width", innerWidth)
+        .attr("height", innerHeight)
+        .attr("fill", "transparent")
+        .on("mousemove", (event) => {
+          const [mx] = d3.pointer(event);
+          const focusPct = x.invert(mx);
+          const frame = getFrame(currentYear);
+          let nearest = frame.points[0];
+          let minDist = Infinity;
+          frame.points.forEach((point) => {
+            const dist = Math.abs(point.x - focusPct);
+            if (dist < minDist) {
+              minDist = dist;
+              nearest = point;
+            }
+          });
+          showTip(
+            `<div style="font-weight:700;margin-bottom:4px;">${Math.round(currentYear)}</div>` +
+            `<div>Bottom ${nearest.x.toFixed(0)}% of games</div>` +
+            `<div>capture only <b style="color:${curveColor}">${nearest.y.toFixed(1)}%</b> of reviews</div>`,
+            event
+          );
+        })
+        .on("mouseleave", hideTip);
+
+      return function update(frame, context) {
+        const line = d3.line().x((d) => x(d.x)).y((d) => y(d.y)).curve(d3.curveMonotoneX);
+        const area = d3.area()
+          .x((d) => x(d.x))
+          .y0((d) => y(d.x))
+          .y1((d) => y(d.y))
+          .curve(d3.curveMonotoneX);
+
+        const yearProgress = (frame.year - YEARS[0]) / (YEARS[YEARS.length - 1] - YEARS[0]);
+        const heat = Math.max(0, Math.min(1, yearProgress));
+        const areaColor = d3.interpolateRgb(curveSoft, "rgba(127, 29, 29, 0.34)")(heat);
+        const lineColor = d3.interpolateRgb(curveColor, curveHot)(Math.max(0, (frame.year - 2019) / 5));
+        const pulse = context.pulse ? 0.5 + 0.5 * Math.sin(context.time * 0.012) : 0;
+        const pulseBoost = context.pulse ? 1 + pulse * 0.14 : 1;
+        const focusTargetPct = interp(68, 90, heat);
+        const focusPoint = frame.points.reduce((best, point) => Math.abs(point.x - focusTargetPct) < Math.abs(best.x - focusTargetPct) ? point : best, frame.points[0]);
+
+        const zoomProgress = context.zoom ? context.zoomAmount : 0;
+        const scale = 1 + zoomProgress * 0.9;
+        const targetX = x(97);
+        const targetY = y(4);
+        const dx = -targetX * zoomProgress * 0.65;
+        const dy = -targetY * zoomProgress * 0.55;
+        plotContent.attr("transform", `translate(${dx},${dy}) scale(${scale})`);
+
+        areaPath
+          .attr("d", area(frame.points))
+          .attr("fill", areaColor)
+          .attr("opacity", context.pulse ? 0.72 + pulse * 0.18 : 0.72);
+        curvePath
+          .attr("d", line(frame.points))
+          .attr("stroke", lineColor)
+          .attr("stroke-width", 3.4 * pulseBoost);
+
+        winnerZone
+          .attr("x", x(90))
+          .attr("width", x(100) - x(90))
+          .attr("opacity", 0.18 + heat * 0.22);
+
+        particles
+          .attr("cx", (d) => x(interp(d.startX, d.endX, Math.pow(heat, 1.5))))
+          .attr("cy", (d) => y(interp(d.startY, d.endY, Math.pow(heat, 1.8))))
+          .attr("r", (d) => d.size * (0.9 + heat * 0.45))
+          .attr("fill", (d) => heat > 0.8 ? d3.interpolateRgb(highlightColor, curveHot)(seededRandom(d.id + heat)) : d3.interpolateRgb(eqColor, highlightColor)(heat * 0.75))
+          .attr("opacity", (d) => 0.18 + heat * 0.55 + seededRandom(d.id + 11) * 0.08);
+
+        focusLine
+          .attr("x1", x(focusPoint.x))
+          .attr("x2", x(focusPoint.x))
+          .attr("y1", y(0))
+          .attr("y2", y(100));
+        focusDot.attr("cx", x(focusPoint.x)).attr("cy", y(focusPoint.y));
+
+        const calloutLabel = `Bottom ${focusPoint.x.toFixed(0)}% capture ${focusPoint.y.toFixed(1)}%`;
+        calloutText.text(calloutLabel);
+        const bbox = calloutText.node().getBBox();
+        const calloutX = Math.min(innerWidth - bbox.width - 26, x(focusPoint.x) + 16);
+        const calloutY = Math.max(44, y(focusPoint.y) - 40);
+        calloutText.attr("x", calloutX + 12).attr("y", calloutY + 18);
+        calloutBubble
+          .attr("x", calloutX)
+          .attr("y", calloutY)
+          .attr("width", bbox.width + 24)
+          .attr("height", 28);
+
+        headline.text(`${frame.summary.top10.toFixed(1)}%`);
+        headline.attr("font-size", context.zoom ? 36 : 28);
+        subline.text("of all reviews go to the top 10%");
+        footer.attr("opacity", 0.42 + zoomProgress * 0.58);
+      };
+    }
+
+    let updateViz = buildViz();
+    let currentYear = YEARS[0];
+    let currentTimelineProgress = 0;
+    let autoplayActive = false;
+    let autoplayStarted = false;
+    let rafId = null;
+
+    function updateSummary(frame, context) {
+      const roundedYear = Math.round(frame.year);
+      yearBadge.textContent = `${roundedYear}`;
+      giniStat.textContent = frame.summary.gini.toFixed(3);
+      top10Stat.textContent = `${frame.summary.top10.toFixed(1)}%`;
+      bottom90Stat.textContent = `${frame.summary.bottom90.toFixed(1)}%`;
+      summaryHint.textContent =
+        `By ${roundedYear}, the bottom 90% of games collectively held only ${frame.summary.bottom90.toFixed(1)}% of all reviews.`;
+      phaseText.textContent = getPhaseCopy(frame.year);
+      progressFill.style.width = `${(context.planProgress * 100).toFixed(2)}%`;
+      progressFill.classList.toggle("progress-pulse", context.pulse);
+
+      yearChips.forEach((chip) => {
+        chip.classList.toggle("active", Number(chip.dataset.year) === roundedYear);
+      });
+    }
+
+    function totalPlanDuration() {
+      return timelinePlan.reduce((sum, step) => sum + step.duration, 0);
+    }
+
+    function frameFromPlan(progress, now) {
+      const total = totalPlanDuration();
+      let remaining = progress * total;
+      let planIndex = 0;
+      let segmentProgress = 0;
+      let activeStep = timelinePlan[0];
+
+      for (let i = 0; i < timelinePlan.length; i += 1) {
+        const step = timelinePlan[i];
+        if (remaining <= step.duration) {
+          planIndex = i;
+          segmentProgress = step.duration === 0 ? 0 : remaining / step.duration;
+          activeStep = step;
+          break;
+        }
+        remaining -= step.duration;
+        if (i === timelinePlan.length - 1) {
+          planIndex = i;
+          segmentProgress = 1;
+          activeStep = step;
+        }
+      }
+
+      let year = YEARS[0];
+      if (activeStep.type === "move") {
+        const eased = 1 - Math.pow(1 - segmentProgress, 3);
+        year = interp(activeStep.from, activeStep.to, eased);
+      } else {
+        year = activeStep.year;
+      }
+
+      const frame = getFrame(year);
+      return {
+        frame,
+        context: {
+          time: now,
+          planProgress: progress,
+          pulse: Boolean(activeStep.pulse),
+          zoom: Boolean(activeStep.zoom),
+          zoomAmount: activeStep.zoom ? segmentProgress : 0
+        }
+      };
+    }
+
+    function renderFromProgress(progress, now) {
+      currentTimelineProgress = Math.max(0, Math.min(1, progress));
+      const { frame, context } = frameFromPlan(currentTimelineProgress, now);
+      currentYear = frame.year;
+      updateViz(frame, context);
+      updateSummary(frame, context);
+    }
+
+    function startAutoplay() {
+      autoplayActive = true;
+      playBtn.textContent = "Playing";
+      const startedAt = performance.now();
+      const duration = totalPlanDuration();
+
+      function step(now) {
+        if (!autoplayActive) {
+          return;
+        }
+        const progress = Math.min(1, (now - startedAt) / duration);
+        renderFromProgress(progress, now);
+        if (progress < 1) {
+          rafId = requestAnimationFrame(step);
+        } else {
+          autoplayActive = false;
+          playBtn.textContent = "Replay";
+        }
+      }
+
+      if (rafId) {
+        cancelAnimationFrame(rafId);
+      }
+      rafId = requestAnimationFrame(step);
+    }
+
+    function resetAndReplay() {
+      autoplayActive = false;
+      if (rafId) {
+        cancelAnimationFrame(rafId);
+      }
+      renderFromProgress(0, performance.now());
+      startAutoplay();
+    }
+
+    playBtn.addEventListener("click", resetAndReplay);
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting && !autoplayStarted) {
+          autoplayStarted = true;
+          startAutoplay();
+        }
+      });
+    }, { threshold: 0.45 });
+    observer.observe(sceneRoot);
+
+    let resizeTimer = null;
+    const resizeObserver = new ResizeObserver(() => {
+      if (resizeTimer) {
+        clearTimeout(resizeTimer);
+      }
+      resizeTimer = setTimeout(() => {
+        d3.select("#vizWrap").selectAll("*").remove();
+        updateViz = buildViz();
+        renderFromProgress(currentTimelineProgress, performance.now());
+      }, 80);
+    });
+    resizeObserver.observe(document.getElementById("vizWrap"));
+
+    renderFromProgress(0, performance.now());
+  </script>
+</body>
+</html>

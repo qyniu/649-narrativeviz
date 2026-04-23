@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Steam Narrative Visualization</title>
+  <style>
+    :root {
+      --bg: #f7f4ee;
+      --paper: #fffdf8;
+      --ink: #1f2933;
+      --muted: #52606d;
+      --line: rgba(31, 41, 51, 0.12);
+      --shadow: 0 18px 48px rgba(31, 41, 51, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top, rgba(42, 157, 143, 0.10), transparent 32%),
+        linear-gradient(180deg, #faf7f2 0%, var(--bg) 100%);
+      line-height: 1.7;
+    }
+
+    main {
+      width: min(1180px, calc(100vw - 32px));
+      margin: 0 auto;
+      padding: 40px 0 72px;
+    }
+
+    .story-block {
+      width: 100%;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      box-shadow: var(--shadow);
+      padding: 28px 32px;
+      margin: 0 0 26px;
+      overflow: hidden;
+    }
+
+    .prose hr {
+      border: 0;
+      border-top: 1px solid var(--line);
+      margin: 1.5rem 0;
+    }
+
+    .prose h1,
+    .prose h2,
+    .prose h3 {
+      line-height: 1.2;
+      margin: 0 0 0.8rem;
+      color: #102a43;
+    }
+
+    .prose h1 {
+      font-size: clamp(2.2rem, 4vw, 3.6rem);
+    }
+
+    .prose h2 {
+      font-size: clamp(1.5rem, 2.6vw, 2.2rem);
+      margin-top: 0.2rem;
+    }
+
+    .prose h3 {
+      font-size: 1.15rem;
+      color: var(--muted);
+    }
+
+    .prose p,
+    .prose blockquote,
+    .prose ul {
+      font-size: 1.05rem;
+      margin: 0 0 1rem;
+    }
+
+    .prose blockquote {
+      margin: 1.2rem 0;
+      padding: 0.2rem 0 0.2rem 1rem;
+      border-left: 4px solid #2a9d8f;
+      color: #334e68;
+      font-style: italic;
+    }
+
+    .prose ul {
+      padding-left: 1.2rem;
+    }
+
+    .viz-block {
+      padding: 22px;
+    }
+
+    .viz-frame {
+      width: 100%;
+      overflow-x: auto;
+    }
+
+    .viz-frame > div:first-child {
+      width: 100%;
+    }
+
+    .saved-html-frame {
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      background: #ffffff;
+      padding: 8px;
+    }
+
+    .saved-html-frame iframe {
+      width: 100%;
+      min-height: 720px;
+      border: 0;
+      display: block;
+      background: #ffffff;
+    }
+
+    .text-output pre {
+      margin: 0;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-family: Consolas, "SFMono-Regular", monospace;
+      font-size: 0.95rem;
+    }
+
+    @media (max-width: 800px) {
+      main {
+        width: min(100vw - 18px, 100%);
+        padding: 18px 0 44px;
+      }
+
+      .story-block {
+        border-radius: 16px;
+        padding: 18px 16px;
+        margin-bottom: 18px;
+      }
+
+      .viz-block {
+        padding: 12px 8px;
+      }
+
+      .saved-html-frame iframe {
+        min-height: 620px;
+      }
+
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="story-block prose"><h1 id="The-Indie-Game-Gold-Rush">The Indie Game Gold Rush</h1><h3 id="How-Steam's-Open-Gate-Created-a-Gold-Rush-%E2%80%94-and-Then-a-Famine">How Steam's Open Gate Created a Gold Rush &#8212; and Then a Famine</h3><p><strong>Team</strong>: Qingyuan Niu (qyniu), Jiayi Yu (yujiayi) | SI 649 | April 2026</p>
+<blockquote>
+<p><em>In 2024, Steam released 12,000+ new games. Players reviewed fewer than 11% of them. The other 89% — silence.</em></p>
+</blockquote>
+<hr />
+<p>Every year, thousands of aspiring developers release their games on Steam, betting months or years of work on a platform promising a global marketplace. For most of the 2010s, that bet seemed reasonable — a small studio could build a reputation, earn enough to survive, and ship a sequel. Today, those odds have nearly vanished.</p>
+<p>This is a story about what happens when supply grows 30× and demand barely moves. It's a story about attention — who gets it, who doesn't, and what developers can learn from the ones who survived.</p>
+<table>
+<thead>
+<tr>
+  <th>Scene</th>
+  <th>Question</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>1 — The Flood</td>
+  <td>How big was the supply explosion?</td>
+</tr>
+<tr>
+  <td>2 — The Attention Gap</td>
+  <td>Did player attention keep pace?</td>
+</tr>
+<tr>
+  <td>3 — The Scissors Effect</td>
+  <td>How much did individual odds shrink?</td>
+</tr>
+<tr>
+  <td>4 — Winner Takes All</td>
+  <td>Where did the attention actually go?</td>
+</tr>
+<tr>
+  <td>5 — The Disappearing Middle</td>
+  <td>What happened to modest success?</td>
+</tr>
+<tr>
+  <td>6 — Genre Resilience</td>
+  <td>Which genres survived — and why?</td>
+</tr>
+<tr>
+  <td>✦ — Survivor Portrait</td>
+  <td>Who beat the odds, and what do they share?</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section class="story-block prose"><hr />
+<h2 id="Scene-1-%E2%80%94-The-Flood-(2008%E2%80%932024)">Scene 1 &#8212; The Flood (2008&#8211;2024)</h2><p>Steam's transformation began with two deliberate policy shifts. In <strong>2012</strong>, Steam Greenlight replaced a closed catalog with community voting — the first crack in the gate. In <strong>2017</strong>, Steam Direct replaced voting with a flat <strong>$100 fee</strong>. Anyone could publish. The gate was open.</p>
+<p>The chart below shows what happened next. Indie releases grew from roughly 400/year in 2013 to <strong>10,000+/year by 2024</strong> — a 25× increase in a single decade. Non-Indie releases grew too, but far more modestly. The shape of the industry changed: what was once a curated marketplace became something closer to a torrent.</p>
+<p><strong>How to read this chart:</strong> Indie (teal) expands upward; Non-Indie (red) expands downward from the center line. Unlike a stacked chart, each side is independently readable. The secondary panel shows Indie's growing share of all releases.</p>
+</section>
+<section class="story-block prose"><hr />
+<h2 id="Scene-2-%E2%80%94-The-Attention-Gap-(2013%E2%80%932024)">Scene 2 &#8212; The Attention Gap (2013&#8211;2024)</h2><p>More games means more competition — but for that competition to be fair, player attention would need to grow proportionally. Players have only 24 hours a day. Reviews are a proxy for engagement. So: did the two curves — supply and demand — keep pace?</p>
+<p>They did not. <strong>Game supply grew ~27× from 2013 to 2024. Total reviews grew only ~4×.</strong> That's a 7-to-1 ratio. The red shaded region between the two lines is the attention deficit — the structural gap that every developer now has to navigate.</p>
+<p>The second panel translates this into practical terms: the average new game released in 2013 could expect to accumulate hundreds of reviews. By 2024, that expectation had collapsed to single digits.</p>
+<p><strong>How to read this chart:</strong> Both metrics are indexed to 2013 = 100. Click either series in the legend to highlight it. Hover for exact values.</p>
+</section>
+<section class="story-block viz-block"><div class="viz-frame saved-html-frame"><iframe src="scene2_attention_gap.html" title="scene2_attention_gap" loading="lazy" style="height:860px"></iframe></div></section>
+<section class="story-block prose"><hr />
+<h2 id="Scene-3-%E2%80%94-The-Scissors-Effect-(2013%E2%80%932024)">Scene 3 &#8212; The Scissors Effect (2013&#8211;2024)</h2><p>The attention gap isn't just an aggregate trend — it translates directly into individual developer odds. The top panel below tracks the <strong>hit rate</strong>: the percentage of games reaching 1,000 reviews, enough to build a reputation and fund a sequel. It fell from <strong>8.35% in 2013 to 0.38% in 2024</strong> — a 22× collapse.</p>
+<p>But the story is more nuanced than a single number. The <strong>middle panel</strong> asks: are the games that <em>do</em> succeed getting more expensive? If survivors are increasingly premium products, that's a signal about what the market rewards. The <strong>bottom panel</strong> asks whether the quality bar is rising — do you need higher positive review rates to break through now than in 2013?</p>
+<p><strong>Click the legend to isolate Indie or Non-Indie across all three panels.</strong></p>
+</section>
+<section class="story-block viz-block"><div class="viz-frame saved-html-frame"><iframe src="scene3_survivor_simulator.html" title="scene3_survivor_simulator" loading="lazy" style="height:980px"></iframe></div></section>
+<section class="story-block prose"><hr />
+<h2 id="Scene-4-%E2%80%94-Winner-Takes-All-(2013%E2%80%932024)">Scene 4 &#8212; Winner Takes All (2013&#8211;2024)</h2><p>So attention stayed nearly fixed. Where did it go? Not evenly distributed. Not randomly. The reviews that existed in the market were increasingly captured by a shrinking fraction of games.</p>
+<p>To visualize this, we borrow a tool from economics: the <strong>Lorenz curve</strong>. Plot every game in a given year from fewest reviews to most (left to right). The Y-axis shows what cumulative share of all reviews those games captured. <strong>Perfect equality</strong> would be a straight diagonal — every game getting an equal share. The real curves bow far below it.</p>
+<p>The darker the curve, the more recent the year. <strong>Watch the bow deepen from 2013 (gray) to 2024 (red).</strong> The Gini coefficients quantify what you're seeing: review inequality went from unequal to deeply unequal in a single decade.</p>
+<p><strong>Click a year in the legend to highlight that curve.</strong></p>
+</section>
+<section class="story-block viz-block"><div class="viz-frame saved-html-frame"><iframe src="scene4_winner_takes_all.html" title="scene4_winner_takes_all" loading="lazy" style="height:930px"></iframe></div></section>
+<section class="story-block prose"><hr />
+<h2 id="Scene-5-%E2%80%94-The-Disappearing-Middle-(2013%E2%80%932024)">Scene 5 &#8212; The Disappearing Middle (2013&#8211;2024)</h2><p>The Lorenz curves showed attention concentrating at the top. This chart shows the other side: what happened to everyone else.</p>
+<p>In 2013, a game earning <strong>100–999 reviews</strong> — 'Modest' success — was a livable outcome for a small indie team. That tier funded the sequel, covered costs, built an audience. Watch it in the flow below: a steady teal band that narrows year by year.</p>
+<p>Meanwhile, the <strong>Ghost tier</strong> (0 reviews) expands like a tide. By 2024, the dominant mass of games on Steam is simply invisible — released into silence and never discovered. The middle isn't just proportionally smaller. It's being squeezed out of a market where only extremes remain.</p>
+<p><strong>Click any tier in the legend to highlight it. Hover for exact game counts and share.</strong></p>
+</section>
+<section class="story-block viz-block"><div class="viz-frame saved-html-frame"><iframe src="scene5_disappearing_middle.html" title="scene5_disappearing_middle" loading="lazy" style="height:900px"></iframe></div></section>
+<section class="story-block prose"><hr />
+<h2 id="Scene-6-%E2%80%94-Genre-Resilience-(2013%E2%80%932024)">Scene 6 &#8212; Genre Resilience (2013&#8211;2024)</h2><p>The aggregate data treats all games as interchangeable. They aren't. Different genres have different audiences, different community behaviors, different saturation dynamics. The question isn't just <em>how many</em> games survived — it's <em>which kinds</em>.</p>
+<p>This chart maps each genre's trajectory through <strong>quality-competition space</strong> over time. The X-axis shows how many games were released in that genre that year — a proxy for competition and market crowding. The Y-axis shows the average positive review percentage of those games — a proxy for quality maintenance. The <strong>size</strong> of each bubble shows how many hit games (1K+ reviews) the genre produced that year.</p>
+<p>The trail lines connect 2013 → 2024 for each genre. Genres that move <strong>right and down</strong> faced more competition and declining quality. Genres that <strong>held their Y position</strong> despite moving right managed to maintain standards even as the market flooded.</p>
+<p><strong>Click a genre in the legend to trace its individual path. Hover for year-by-year stats.</strong></p>
+</section>
+<section class="story-block viz-block"><div class="viz-frame saved-html-frame"><iframe src="scene6_genre_resilience.html" title="scene6_genre_resilience" loading="lazy" style="height:980px"></iframe></div></section>
+<section class="story-block prose"><hr />
+<h2 id="Closing-%E2%80%94-Survivor-Portrait-(2020%E2%80%932024)">Closing &#8212; Survivor Portrait (2020&#8211;2024)</h2><p>After six scenes of collapse, here are the games that made it through. Released since 2020, with 5,000+ total reviews. They span both Indie and AAA. They span multiple genres. Their prices range from free to $60+.</p>
+<p>What they share: they sit in the <strong>upper-right corner</strong> of this chart — high quality (positive review %), significant success (review count), and a large estimated player base (bubble size). The space below and to the left is where most games end up: modest quality, modest success, or none at all.</p>
+<p>Notice the <strong>Indie survivors</strong> (teal): they occupy the same quality-success corridor as AAA games (red), but their bubbles are often smaller. The ceiling for Indie success appears structurally lower — achievable, but harder. The question the data can't answer is <em>why</em> these specific games broke through. That's still the craft. What the data can tell you: <strong>without high positive review rates, survival is nearly impossible regardless of budget.</strong></p>
+<blockquote>
+<p><em>Steam promised anyone could publish a game — and that is true. What it never promised was that anyone would play it. The flood keeps rising. The ceiling on success has barely moved.</em></p>
+</blockquote>
+<p><strong>Click Indie or AAA in the legend to isolate. Hover for full game details.</strong></p>
+</section>
+<section class="story-block viz-block"><div class="viz-frame saved-html-frame"><iframe src="scene7_survivor_portrait.html" title="scene7_survivor_portrait" loading="lazy" style="height:980px"></iframe></div></section>
+<section class="story-block prose"><hr />
+<h2 id="Data-Notes">Data Notes</h2><ul>
+<li><strong>Source</strong>: Steam Games dataset (cleaned), 86,975 games, 2008\u20132024</li>
+<li><strong>Hit definition</strong>: \u2265 1,000 total reviews (positive + negative)</li>
+<li><strong>Review tiers</strong>: pre-computed <code>review_bucket</code> column</li>
+<li><strong>Primary genre</strong>: first matching genre from <code>Genres</code> column against curated list; games with only <code>Indie</code>/<code>Free To Play</code> fall back to <code>Other</code></li>
+<li><strong>Attention proxy</strong>: <code>total_reviews</code> = all-time accumulated review count at time of data collection</li>
+<li><strong>New columns used in v2</strong>: <code>Price</code>, <code>positive_pct</code>, <code>owners_midpoint</code></li>
+</ul>
+<table>
+<thead>
+<tr>
+  <th>Metric</th>
+  <th>2013</th>
+  <th>2024</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>Games released</td>
+  <td>455</td>
+  <td>12,452</td>
+</tr>
+<tr>
+  <td>Hit rate (\u22651K reviews)</td>
+  <td>8.35%</td>
+  <td>0.38%</td>
+</tr>
+<tr>
+  <td>% with zero reviews</td>
+  <td>83.3%</td>
+  <td>89.1%</td>
+</tr>
+<tr>
+  <td>Supply growth vs. 2013</td>
+  <td>1\u00d7</td>
+  <td>~27\u00d7</td>
+</tr>
+<tr>
+  <td>Review demand growth vs. 2013</td>
+  <td>1\u00d7</td>
+  <td>~4\u00d7</td>
+</tr>
+</tbody>
+</table>
+</section>
+  </main>
+</body>
+</html>

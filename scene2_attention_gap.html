@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scene 2 - The Attention Gap</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --surface: #ffffff;
+      --line: rgba(15, 23, 42, 0.12);
+      --grid: rgba(15, 23, 42, 0.08);
+      --text: #12202f;
+      --muted: #5f6c7b;
+      --supply: #2a9d8f;
+      --supply-soft: rgba(42, 157, 143, 0.16);
+      --attention: #264653;
+      --attention-soft: rgba(38, 70, 83, 0.16);
+      --highlight: #f4a261;
+      --accent: #1d3557;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: Georgia, "Times New Roman", serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .scene {
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: 18px 18px 10px;
+      background: var(--surface);
+    }
+
+    .eyebrow {
+      font: 600 0.8rem/1.2 "Segoe UI", sans-serif;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    h1 {
+      font-size: clamp(1.8rem, 3vw, 2.9rem);
+      line-height: 1.05;
+      color: #102a43;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      max-width: 800px;
+      color: var(--muted);
+      font-size: 1rem;
+      line-height: 1.6;
+      margin-bottom: 18px;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: auto 1fr auto auto;
+      gap: 14px;
+      align-items: center;
+      margin-bottom: 12px;
+      padding: 12px 14px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(248,250,252,0.96));
+    }
+
+    .ctrl-label,
+    .year-display,
+    .play-btn,
+    .legend,
+    .jump-row,
+    .note {
+      font-family: "Segoe UI", sans-serif;
+    }
+
+    .ctrl-label {
+      color: var(--muted);
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--accent);
+      cursor: ew-resize;
+    }
+
+    .year-display {
+      min-width: 56px;
+      text-align: right;
+      color: var(--accent);
+      font-size: 1.15rem;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .play-btn,
+    .jump-btn {
+      border: 1px solid rgba(29, 53, 87, 0.16);
+      background: #f7f9fb;
+      color: var(--accent);
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 140ms ease, transform 140ms ease;
+    }
+
+    .play-btn:hover,
+    .jump-btn:hover {
+      background: #eef3f8;
+      transform: translateY(-1px);
+    }
+
+    .jump-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+
+    .jump-btn.active {
+      background: #e7eef8;
+      border-color: rgba(29, 53, 87, 0.22);
+    }
+
+    .legend {
+      display: flex;
+      gap: 18px;
+      align-items: center;
+      color: var(--muted);
+      font-size: 0.82rem;
+      margin-bottom: 12px;
+    }
+
+    .legend-item {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .swatch {
+      width: 12px;
+      height: 12px;
+      border-radius: 999px;
+    }
+
+    .note {
+      color: var(--muted);
+      font-size: 0.8rem;
+      margin-bottom: 10px;
+    }
+
+    #vizWrap {
+      width: 100%;
+      border-top: 1px solid rgba(15, 23, 42, 0.05);
+      padding-top: 10px;
+    }
+
+    svg {
+      display: block;
+      width: 100%;
+      overflow: visible;
+    }
+
+    .label {
+      font: 700 16px "Segoe UI", sans-serif;
+      fill: #102a43;
+    }
+
+    .sub-label {
+      font: 12px "Segoe UI", sans-serif;
+      fill: var(--muted);
+    }
+
+    .tick-label {
+      font: 11px "Segoe UI", sans-serif;
+      fill: var(--muted);
+    }
+
+    .metric-chip text {
+      font: 12px "Segoe UI", sans-serif;
+    }
+
+    .tooltip {
+      position: fixed;
+      display: none;
+      pointer-events: none;
+      z-index: 999;
+      background: rgba(255, 255, 255, 0.98);
+      border: 1px solid rgba(15, 23, 42, 0.12);
+      box-shadow: 0 14px 40px rgba(15, 23, 42, 0.10);
+      border-radius: 12px;
+      padding: 10px 12px;
+      color: var(--text);
+      font: 12px/1.55 "Segoe UI", sans-serif;
+      min-width: 184px;
+    }
+
+    .tooltip.show {
+      display: block;
+    }
+
+    @media (max-width: 820px) {
+      .scene {
+        padding: 10px 10px 0;
+      }
+
+      .controls {
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+
+      .year-display {
+        text-align: left;
+      }
+    }
+  </style>
+</head>
+<body>
+  <section class="scene">
+    <div class="eyebrow">Scene 2</div>
+    <h1>The Attention Gap</h1>
+    <p class="subtitle">
+      The market on the left keeps filling with new releases. The attention reservoir on the right barely rises.
+      Bubble volume shows indexed supply versus indexed player reviews; inside the attention tank, bubble size and glow encode average reviews per new game.
+    </p>
+
+    <div class="controls">
+      <span class="ctrl-label">Reveal Through Year</span>
+      <input type="range" id="yearSlider" min="2013" max="2024" value="2013" step="0.01" />
+      <span class="year-display" id="yearDisplay">2013</span>
+      <button class="play-btn" id="playBtn">Replay</button>
+    </div>
+
+    <div class="jump-row">
+      <button class="jump-btn active" data-year="2013">2013 Baseline</button>
+      <button class="jump-btn" data-year="2017">2017 Direct</button>
+      <button class="jump-btn" data-year="2020">2020 Shock</button>
+      <button class="jump-btn" data-year="2024">2024 Collapse</button>
+    </div>
+
+    <div class="legend">
+      <div class="legend-item"><span class="swatch" style="background: var(--supply);"></span><span>Game supply volume</span></div>
+      <div class="legend-item"><span class="swatch" style="background: var(--attention);"></span><span>Player attention volume</span></div>
+      <div class="legend-item"><span class="swatch" style="background: var(--highlight);"></span><span>Avg reviews per new game</span></div>
+    </div>
+
+    <div class="note">Drag the slider to scrub the imbalance. Hover either tank for the exact yearly story.</div>
+
+    <div id="vizWrap"></div>
+  </section>
+
+  <div class="tooltip" id="tooltip"></div>
+
+  <script>
+    const DATA = [
+      { year: 2013, games: 455, totalReviews: 1557899, avgReviews: 3423.95, supplyIndex: 100.0, reviewsIndex: 100.0, gapSize: 0.0 },
+      { year: 2014, games: 1490, totalReviews: 1162684, avgReviews: 780.32, supplyIndex: 327.47, reviewsIndex: 74.63, gapSize: 252.84 },
+      { year: 2015, games: 2464, totalReviews: 1569323, avgReviews: 636.90, supplyIndex: 541.54, reviewsIndex: 100.73, gapSize: 440.81 },
+      { year: 2016, games: 4040, totalReviews: 2217604, avgReviews: 548.91, supplyIndex: 887.91, reviewsIndex: 142.35, gapSize: 745.57 },
+      { year: 2017, games: 5763, totalReviews: 2629692, avgReviews: 456.31, supplyIndex: 1266.59, reviewsIndex: 168.80, gapSize: 1097.80 },
+      { year: 2018, games: 7343, totalReviews: 1944191, avgReviews: 264.77, supplyIndex: 1613.85, reviewsIndex: 124.80, gapSize: 1489.05 },
+      { year: 2019, games: 7132, totalReviews: 1059743, avgReviews: 148.59, supplyIndex: 1567.47, reviewsIndex: 68.02, gapSize: 1499.45 },
+      { year: 2020, games: 8707, totalReviews: 1813742, avgReviews: 208.31, supplyIndex: 1913.63, reviewsIndex: 116.42, gapSize: 1797.20 },
+      { year: 2021, games: 10410, totalReviews: 1539436, avgReviews: 147.88, supplyIndex: 2287.91, reviewsIndex: 98.81, gapSize: 2189.10 },
+      { year: 2022, games: 11495, totalReviews: 1224374, avgReviews: 106.51, supplyIndex: 2526.37, reviewsIndex: 78.59, gapSize: 2447.78 },
+      { year: 2023, games: 13702, totalReviews: 1553088, avgReviews: 113.35, supplyIndex: 3011.43, reviewsIndex: 99.69, gapSize: 2911.74 },
+      { year: 2024, games: 12452, totalReviews: 243282, avgReviews: 19.54, supplyIndex: 2736.70, reviewsIndex: 15.62, gapSize: 2721.09 }
+    ];
+
+    const tooltip = document.getElementById("tooltip");
+    const slider = document.getElementById("yearSlider");
+    const yearDisplay = document.getElementById("yearDisplay");
+    const playBtn = document.getElementById("playBtn");
+    const jumpButtons = Array.from(document.querySelectorAll(".jump-btn"));
+
+    const styles = getComputedStyle(document.documentElement);
+    const supplyColor = styles.getPropertyValue("--supply").trim();
+    const supplySoft = styles.getPropertyValue("--supply-soft").trim();
+    const attentionColor = styles.getPropertyValue("--attention").trim();
+    const attentionSoft = styles.getPropertyValue("--attention-soft").trim();
+    const highlightColor = styles.getPropertyValue("--highlight").trim();
+    const accentColor = styles.getPropertyValue("--accent").trim();
+    const mutedColor = styles.getPropertyValue("--muted").trim();
+
+    const firstYear = DATA[0].year;
+    const lastYear = DATA[DATA.length - 1].year;
+    const maxIndex = d3.max(DATA, (d) => d.supplyIndex);
+    const minAvg = d3.min(DATA, (d) => d.avgReviews);
+    const maxAvg = d3.max(DATA, (d) => d.avgReviews);
+
+    const bubblePool = {
+      supply: 136,
+      attention: 44
+    };
+
+    function seededRandom(seed) {
+      const value = Math.sin(seed * 999.73) * 43758.5453;
+      return value - Math.floor(value);
+    }
+
+    function showTip(html, event) {
+      tooltip.innerHTML = html;
+      tooltip.classList.add("show");
+      moveTip(event);
+    }
+
+    function moveTip(event) {
+      tooltip.style.left = Math.min(event.clientX + 16, window.innerWidth - 206) + "px";
+      tooltip.style.top = Math.max(12, event.clientY - 12) + "px";
+    }
+
+    function hideTip() {
+      tooltip.classList.remove("show");
+    }
+
+    function formatMetric(value, digits = 0) {
+      return d3.format(`,.${digits}f`)(value);
+    }
+
+    function interpolateYear(progressYear) {
+      const clamped = Math.max(firstYear, Math.min(lastYear, progressYear));
+      const lowerYear = Math.floor(clamped);
+      const upperYear = Math.min(lastYear, lowerYear + 1);
+      const t = clamped - lowerYear;
+      const lower = DATA.find((d) => d.year === lowerYear) || DATA[0];
+      const upper = DATA.find((d) => d.year === upperYear) || DATA[DATA.length - 1];
+
+      return {
+        year: clamped,
+        roundedYear: Math.round(clamped),
+        games: d3.interpolateNumber(lower.games, upper.games)(t),
+        totalReviews: d3.interpolateNumber(lower.totalReviews, upper.totalReviews)(t),
+        avgReviews: d3.interpolateNumber(lower.avgReviews, upper.avgReviews)(t),
+        supplyIndex: d3.interpolateNumber(lower.supplyIndex, upper.supplyIndex)(t),
+        reviewsIndex: d3.interpolateNumber(lower.reviewsIndex, upper.reviewsIndex)(t),
+        gapSize: d3.interpolateNumber(lower.gapSize, upper.gapSize)(t)
+      };
+    }
+
+    function bubbleLayout(count, tank, progress, avgValue) {
+      const positions = [];
+      const cols = tank.kind === "supply" ? 10 : 5;
+      const activeRows = Math.max(1, Math.ceil(count / cols));
+      const radiusScale = tank.kind === "attention"
+        ? d3.scaleLinear().domain([minAvg, maxAvg]).range([5, 14])
+        : d3.scaleLinear().domain([0, bubblePool.supply]).range([4.2, 5.2]);
+
+      for (let i = 0; i < (tank.kind === "supply" ? bubblePool.supply : bubblePool.attention); i += 1) {
+        const active = i < count;
+        const row = Math.floor(i / cols);
+        const col = i % cols;
+        const colWidth = tank.innerW / cols;
+        const baseX = tank.x + colWidth * (col + 0.5);
+        const jitterX = (seededRandom(i + count * 0.37 + tank.seed) - 0.5) * colWidth * 0.42;
+        const riseBand = tank.fillY + tank.fillH - (row + 0.75) * ((tank.fillH - 18) / Math.max(1, activeRows));
+        const jitterY = (seededRandom(i + 14 + tank.seed) - 0.5) * 8;
+        const hiddenY = tank.y + 16 + row * 3;
+        const r = tank.kind === "attention" ? radiusScale(avgValue) * (0.78 + seededRandom(i + 99) * 0.42) : radiusScale(i);
+        positions.push({
+          x: baseX + jitterX,
+          y: active ? riseBand + jitterY : hiddenY,
+          r,
+          opacity: active ? (tank.kind === "attention" ? 0.88 : 0.72) : 0,
+          colorMix: active ? seededRandom(i + progress * 2.7) : 0
+        });
+      }
+      return positions;
+    }
+
+    function tooltipHtml(snapshot) {
+      return [
+        `<div style="font-weight:700;margin-bottom:4px;">${Math.round(snapshot.year)}</div>`,
+        `<div>Games released: <b style="color:${supplyColor}">${formatMetric(snapshot.games)}</b></div>`,
+        `<div>Total reviews: <b style="color:${attentionColor}">${formatMetric(snapshot.totalReviews)}</b></div>`,
+        `<div>Supply index: <b>${snapshot.supplyIndex.toFixed(1)}</b></div>`,
+        `<div>Attention index: <b>${snapshot.reviewsIndex.toFixed(1)}</b></div>`,
+        `<div>Avg reviews / new game: <b style="color:${highlightColor}">${snapshot.avgReviews.toFixed(1)}</b></div>`
+      ].join("");
+    }
+
+    function buildViz() {
+      const wrap = document.getElementById("vizWrap");
+      const width = Math.max(wrap.clientWidth || 980, 620);
+      const height = 620;
+      const svg = d3.select(wrap).append("svg").attr("viewBox", `0 0 ${width} ${height}`);
+      const defs = svg.append("defs");
+
+      const tankW = Math.min(280, width * 0.28);
+      const tankH = 350;
+      const topY = 132;
+      const leftX = Math.max(44, width * 0.08);
+      const rightX = width - leftX - tankW;
+
+      const glow = defs.append("filter").attr("id", "scene2Glow");
+      glow.append("feGaussianBlur").attr("stdDeviation", 8).attr("result", "blur");
+      const merge = glow.append("feMerge");
+      merge.append("feMergeNode").attr("in", "blur");
+      merge.append("feMergeNode").attr("in", "SourceGraphic");
+
+      function tankDef(id, x, y) {
+        defs.append("clipPath").attr("id", id)
+          .append("rect")
+          .attr("x", x)
+          .attr("y", y)
+          .attr("width", tankW)
+          .attr("height", tankH)
+          .attr("rx", 34);
+      }
+
+      tankDef("clipSupply", leftX, topY);
+      tankDef("clipAttention", rightX, topY);
+
+      function drawTank(x, title, subtitle, color) {
+        svg.append("text").attr("class", "label").attr("x", x).attr("y", 38).text(title);
+        svg.append("text").attr("class", "sub-label").attr("x", x).attr("y", 58).text(subtitle);
+
+        svg.append("rect")
+          .attr("x", x)
+          .attr("y", topY)
+          .attr("width", tankW)
+          .attr("height", tankH)
+          .attr("rx", 34)
+          .attr("fill", "#fbfdff")
+          .attr("stroke", "rgba(17, 24, 39, 0.12)")
+          .attr("stroke-width", 2);
+
+        svg.append("rect")
+          .attr("x", x + 10)
+          .attr("y", topY + 10)
+          .attr("width", tankW - 20)
+          .attr("height", 20)
+          .attr("rx", 12)
+          .attr("fill", "rgba(255,255,255,0.55)");
+
+        svg.append("line")
+          .attr("x1", x + tankW + 16)
+          .attr("x2", x + tankW + 26)
+          .attr("y1", topY + tankH - 1)
+          .attr("y2", topY + tankH - 1)
+          .attr("stroke", color)
+          .attr("stroke-width", 2)
+          .attr("opacity", 0.22);
+      }
+
+      drawTank(leftX, "Game Supply", "More new releases every year", supplyColor);
+      drawTank(rightX, "Player Attention", "Reviews fail to keep pace", attentionColor);
+
+      const axisX = width / 2;
+      svg.append("line")
+        .attr("x1", axisX)
+        .attr("x2", axisX)
+        .attr("y1", 96)
+        .attr("y2", topY + tankH + 20)
+        .attr("stroke", "rgba(17, 24, 39, 0.08)")
+        .attr("stroke-dasharray", "4,8");
+
+      const tankScale = d3.scaleLinear().domain([0, maxIndex]).range([0, tankH - 24]);
+
+      const supplyFluid = svg.append("rect")
+        .attr("x", leftX + 10)
+        .attr("width", tankW - 20)
+        .attr("rx", 26)
+        .attr("fill", supplySoft)
+        .attr("clip-path", "url(#clipSupply)");
+
+      const attentionFluid = svg.append("rect")
+        .attr("x", rightX + 10)
+        .attr("width", tankW - 20)
+        .attr("rx", 26)
+        .attr("fill", attentionSoft)
+        .attr("clip-path", "url(#clipAttention)");
+
+      const supplyGroup = svg.append("g").attr("clip-path", "url(#clipSupply)");
+      const attentionGroup = svg.append("g").attr("clip-path", "url(#clipAttention)");
+
+      const supplyBubbles = supplyGroup.selectAll("circle")
+        .data(d3.range(bubblePool.supply))
+        .enter()
+        .append("circle")
+        .attr("fill", supplyColor)
+        .attr("opacity", 0);
+
+      const attentionBubbles = attentionGroup.selectAll("circle")
+        .data(d3.range(bubblePool.attention))
+        .enter()
+        .append("circle")
+        .attr("opacity", 0)
+        .attr("filter", "url(#scene2Glow)");
+
+      const gapBand = svg.append("path")
+        .attr("fill", "rgba(244, 162, 97, 0.14)")
+        .attr("stroke", "rgba(244, 162, 97, 0.35)")
+        .attr("stroke-width", 1.2);
+
+      const gapText = svg.append("text")
+        .attr("x", axisX)
+        .attr("y", 104)
+        .attr("text-anchor", "middle")
+        .attr("font-family", "Segoe UI, sans-serif")
+        .attr("font-size", 13)
+        .attr("font-weight", 700)
+        .attr("fill", accentColor);
+
+      const gapSub = svg.append("text")
+        .attr("x", axisX)
+        .attr("y", 124)
+        .attr("text-anchor", "middle")
+        .attr("font-family", "Segoe UI, sans-serif")
+        .attr("font-size", 11)
+        .attr("fill", mutedColor);
+
+      const chipGroup = svg.append("g").attr("class", "metric-chip");
+      chipGroup.append("rect")
+        .attr("x", axisX - 102)
+        .attr("y", topY + tankH + 26)
+        .attr("width", 204)
+        .attr("height", 58)
+        .attr("rx", 18)
+        .attr("fill", "#f7fafc")
+        .attr("stroke", "rgba(17, 24, 39, 0.10)");
+
+      const chipLabel = chipGroup.append("text")
+        .attr("x", axisX)
+        .attr("y", topY + tankH + 48)
+        .attr("text-anchor", "middle")
+        .attr("fill", mutedColor)
+        .text("Avg reviews per new game");
+
+      const chipValue = chipGroup.append("text")
+        .attr("x", axisX)
+        .attr("y", topY + tankH + 74)
+        .attr("text-anchor", "middle")
+        .attr("font-size", 22)
+        .attr("font-weight", 800)
+        .attr("fill", highlightColor);
+
+      const tankNotes = [
+        { x: leftX + tankW / 2, y: topY + tankH + 112, text: "Indexed to 2013 = 100. This tank keeps rising." },
+        { x: rightX + tankW / 2, y: topY + tankH + 112, text: "Same index scale. This one barely moves." }
+      ];
+
+      tankNotes.forEach((note) => {
+        svg.append("text")
+          .attr("class", "sub-label")
+          .attr("x", note.x)
+          .attr("y", note.y)
+          .attr("text-anchor", "middle")
+          .text(note.text);
+      });
+
+      const overlayRects = [
+        { x: leftX, y: topY, width: tankW, height: tankH, kind: "supply" },
+        { x: rightX, y: topY, width: tankW, height: tankH, kind: "attention" }
+      ];
+
+      svg.selectAll(".hover-panel")
+        .data(overlayRects)
+        .enter()
+        .append("rect")
+        .attr("x", (d) => d.x)
+        .attr("y", (d) => d.y)
+        .attr("width", (d) => d.width)
+        .attr("height", (d) => d.height)
+        .attr("fill", "transparent")
+        .on("mousemove", (event) => showTip(tooltipHtml(currentSnapshot), event))
+        .on("mouseleave", hideTip);
+
+      let currentSnapshot = interpolateYear(firstYear);
+
+      return function update(snapshot) {
+        currentSnapshot = snapshot;
+        const supplyFill = tankScale(snapshot.supplyIndex);
+        const attentionFill = tankScale(snapshot.reviewsIndex);
+
+        const supplyTank = {
+          kind: "supply",
+          seed: 11,
+          x: leftX + 14,
+          y: topY + 12,
+          innerW: tankW - 28,
+          fillY: topY + tankH - supplyFill,
+          fillH: Math.max(20, supplyFill)
+        };
+
+        const attentionTank = {
+          kind: "attention",
+          seed: 29,
+          x: rightX + 14,
+          y: topY + 12,
+          innerW: tankW - 28,
+          fillY: topY + tankH - attentionFill,
+          fillH: Math.max(20, attentionFill)
+        };
+
+        supplyFluid
+          .attr("y", supplyTank.fillY)
+          .attr("height", supplyTank.fillH);
+
+        attentionFluid
+          .attr("y", attentionTank.fillY)
+          .attr("height", attentionTank.fillH);
+
+        const supplyCount = Math.round(d3.scaleLinear().domain([100, maxIndex]).range([10, bubblePool.supply])(snapshot.supplyIndex));
+        const attentionCount = Math.round(d3.scaleLinear().domain([0, maxIndex]).range([8, bubblePool.attention])(snapshot.reviewsIndex));
+
+        const supplyPos = bubbleLayout(supplyCount, supplyTank, snapshot.year, snapshot.avgReviews);
+        const attentionPos = bubbleLayout(attentionCount, attentionTank, snapshot.year, snapshot.avgReviews);
+        const attentionColorScale = d3.scaleLinear().domain([minAvg, maxAvg]).range([0.22, 1]);
+        const attentionIntensity = attentionColorScale(snapshot.avgReviews);
+
+        supplyBubbles
+          .data(supplyPos)
+          .attr("cx", (d) => d.x)
+          .attr("cy", (d) => d.y)
+          .attr("r", (d) => d.r)
+          .attr("opacity", (d) => d.opacity);
+
+        attentionBubbles
+          .data(attentionPos)
+          .attr("cx", (d) => d.x)
+          .attr("cy", (d) => d.y)
+          .attr("r", (d) => d.r)
+          .attr("fill", (d) => d3.interpolateRgb(attentionColor, highlightColor)(Math.min(1, attentionIntensity * (0.55 + d.colorMix * 0.6))))
+          .attr("opacity", (d) => d.opacity);
+
+        const supplyTop = supplyTank.fillY;
+        const attentionTop = attentionTank.fillY;
+        const midY = Math.min(supplyTop, attentionTop) - 14;
+        gapBand.attr("d", [
+          `M ${leftX + tankW + 10} ${supplyTop}`,
+          `C ${axisX - 26} ${supplyTop}, ${axisX - 26} ${midY}, ${axisX} ${midY}`,
+          `C ${axisX + 26} ${midY}, ${axisX + 26} ${attentionTop}, ${rightX - 10} ${attentionTop}`,
+          `L ${rightX - 10} ${attentionTop + 14}`,
+          `C ${axisX + 34} ${attentionTop + 20}, ${axisX + 34} ${midY + 18}, ${axisX} ${midY + 18}`,
+          `C ${axisX - 34} ${midY + 18}, ${axisX - 34} ${supplyTop + 20}, ${leftX + tankW + 10} ${supplyTop + 14}`,
+          "Z"
+        ].join(" "));
+
+        gapText.text(`${(snapshot.supplyIndex / Math.max(snapshot.reviewsIndex, 1)).toFixed(1)}x wider`);
+        gapSub.text("supply growth vs. attention growth");
+        chipValue.text(`${snapshot.avgReviews.toFixed(1)}`);
+
+        jumpButtons.forEach((button) => {
+          button.classList.toggle("active", Number(button.dataset.year) === Math.round(snapshot.year));
+        });
+      };
+    }
+
+    let updateViz = buildViz();
+    let currentValue = firstYear;
+    let targetValue = firstYear;
+    let rafId = null;
+    let autoplayRaf = null;
+    let autoplayStarted = false;
+
+    function renderYearLabel(value) {
+      yearDisplay.textContent = Math.round(value);
+    }
+
+    function tick() {
+      currentValue += (targetValue - currentValue) * 0.12;
+      if (Math.abs(targetValue - currentValue) < 0.001) {
+        currentValue = targetValue;
+      }
+
+      const snapshot = interpolateYear(currentValue);
+      updateViz(snapshot);
+      renderYearLabel(currentValue);
+
+      if (Math.abs(targetValue - currentValue) >= 0.001) {
+        rafId = requestAnimationFrame(tick);
+      } else {
+        rafId = null;
+      }
+    }
+
+    function scheduleRender() {
+      if (!rafId) {
+        rafId = requestAnimationFrame(tick);
+      }
+    }
+
+    function setTarget(value) {
+      targetValue = Math.max(firstYear, Math.min(lastYear, value));
+      scheduleRender();
+    }
+
+    slider.addEventListener("input", () => {
+      stopAutoplay();
+      setTarget(parseFloat(slider.value));
+    });
+
+    jumpButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        stopAutoplay();
+        const year = Number(button.dataset.year);
+        slider.value = String(year);
+        setTarget(year);
+      });
+    });
+
+    function stopAutoplay() {
+      if (autoplayRaf) {
+        cancelAnimationFrame(autoplayRaf);
+        autoplayRaf = null;
+      }
+      playBtn.textContent = "Replay";
+    }
+
+    function startAutoplay(fromStart) {
+      stopAutoplay();
+      if (fromStart) {
+        currentValue = firstYear;
+        targetValue = firstYear;
+        slider.value = String(firstYear);
+        updateViz(interpolateYear(firstYear));
+        renderYearLabel(firstYear);
+      }
+
+      let start = null;
+      const duration = 4800;
+      playBtn.textContent = "Playing";
+
+      function step(ts) {
+        if (start === null) {
+          start = ts;
+        }
+        const elapsed = ts - start;
+        const t = Math.min(1, elapsed / duration);
+        const eased = 1 - Math.pow(1 - t, 3);
+        const value = firstYear + (lastYear - firstYear) * eased;
+        slider.value = String(value);
+        setTarget(value);
+
+        if (t < 1) {
+          autoplayRaf = requestAnimationFrame(step);
+        } else {
+          autoplayRaf = null;
+          playBtn.textContent = "Replay";
+        }
+      }
+
+      autoplayRaf = requestAnimationFrame(step);
+    }
+
+    playBtn.addEventListener("click", () => startAutoplay(true));
+
+    let resizeTimer = null;
+    const resizeObserver = new ResizeObserver(() => {
+      if (resizeTimer) {
+        clearTimeout(resizeTimer);
+      }
+      resizeTimer = setTimeout(() => {
+        d3.select("#vizWrap").selectAll("*").remove();
+        updateViz = buildViz();
+        updateViz(interpolateYear(currentValue));
+      }, 80);
+    });
+    resizeObserver.observe(document.getElementById("vizWrap"));
+
+    updateViz(interpolateYear(firstYear));
+    renderYearLabel(firstYear);
+
+    setTimeout(() => {
+      if (!autoplayStarted) {
+        autoplayStarted = true;
+        startAutoplay(false);
+      }
+    }, 360);
+  </script>
+</body>
+</html>
