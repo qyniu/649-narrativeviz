@@ -58,53 +58,20 @@
       margin-bottom: 18px;
     }
 
-    .controls {
-      display: grid;
-      grid-template-columns: 1.2fr 1fr;
-      gap: 14px;
-      margin-bottom: 12px;
-    }
-
-    .control-card,
-    .summary-card {
-      border: 1px solid var(--line);
-      border-radius: 16px;
-      background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(248,250,252,0.96));
-      padding: 14px;
-    }
-
-    .narrative-row,
-    .timeline,
-    .stat-label,
-    .stat-value,
     .hint,
     .legend,
-    .year-badge,
-    .summary-copy,
-    .chip,
+    .year-inline,
     .button {
       font-family: "Segoe UI", sans-serif;
     }
 
-    .narrative-row {
+    .topbar {
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      gap: 12px;
+      justify-content: flex-start;
+      gap: 10px;
+      flex-wrap: wrap;
       margin-bottom: 12px;
-    }
-
-    .title-sm {
-      font: 700 0.95rem/1.3 "Segoe UI", sans-serif;
-      color: #102a43;
-      margin-bottom: 2px;
-    }
-
-    .year-badge {
-      color: var(--accent);
-      font-size: 1.25rem;
-      font-weight: 800;
-      font-variant-numeric: tabular-nums;
     }
 
     .button {
@@ -124,88 +91,10 @@
       transform: translateY(-1px);
     }
 
-    .progress-shell {
-      position: relative;
-      height: 12px;
-      border-radius: 999px;
-      background: linear-gradient(90deg, rgba(69, 123, 157, 0.1), rgba(230, 57, 70, 0.12));
-      overflow: hidden;
-      margin-bottom: 10px;
-    }
-
-    .progress-fill {
-      position: absolute;
-      inset: 0 auto 0 0;
-      width: 0%;
-      background: linear-gradient(90deg, #457b9d, #e63946);
-      border-radius: 999px;
-      transition: width 180ms ease;
-    }
-
-    .timeline {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      margin-bottom: 8px;
-    }
-
-    .chip {
-      border: 1px solid rgba(15, 23, 42, 0.08);
-      border-radius: 999px;
-      padding: 6px 10px;
-      background: #fbfcfd;
-      font-size: 0.78rem;
-      color: var(--muted);
-      transition: all 180ms ease;
-    }
-
-    .chip.active {
-      color: #fff;
-      background: var(--accent);
-      border-color: rgba(29, 53, 87, 0.16);
-      transform: translateY(-1px);
-    }
-
     .hint {
       color: var(--muted);
       font-size: 0.8rem;
       line-height: 1.45;
-    }
-
-    .summary-card {
-      display: grid;
-      gap: 10px;
-      align-content: start;
-    }
-
-    .stat-grid {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 10px;
-    }
-
-    .stat {
-      border-radius: 14px;
-      border: 1px solid rgba(15, 23, 42, 0.08);
-      background: rgba(255,255,255,0.72);
-      padding: 10px;
-    }
-
-    .stat-label {
-      color: var(--muted);
-      font-size: 0.76rem;
-      margin-bottom: 6px;
-    }
-
-    .stat-value {
-      font: 800 1.08rem/1.15 "Segoe UI", sans-serif;
-      color: #102a43;
-    }
-
-    .summary-copy {
-      color: var(--muted);
-      font-size: 0.84rem;
-      line-height: 1.55;
     }
 
     .legend {
@@ -259,6 +148,41 @@
       position: relative;
     }
 
+    .chart-controls {
+      position: absolute;
+      left: 94px;
+      right: 108px;
+      bottom: 22px;
+      z-index: 6;
+      display: grid;
+      gap: 8px;
+      padding: 10px 14px;
+      border: 1px solid rgba(15, 23, 42, 0.08);
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.76);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+    }
+
+    .year-inline {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      color: var(--muted);
+      font-size: 0.8rem;
+    }
+
+    .year-inline strong {
+      color: #102a43;
+      font-size: 1rem;
+    }
+
+    .year-slider {
+      width: 100%;
+      accent-color: #1d3557;
+    }
+
     svg {
       display: block;
       width: 100%;
@@ -295,12 +219,10 @@
     }
 
     @media (max-width: 880px) {
-      .controls {
-        grid-template-columns: 1fr;
-      }
-
-      .stat-grid {
-        grid-template-columns: 1fr;
+      .chart-controls {
+        left: 18px;
+        right: 18px;
+        bottom: 18px;
       }
     }
   </style>
@@ -315,53 +237,22 @@
       even while competition explodes. Others get dragged rightward into overcrowding without keeping the same standards.
     </p>
 
-    <div class="controls">
-      <div class="control-card">
-        <div class="narrative-row">
-          <div>
-            <div class="title-sm">Autoplay Narrative</div>
-            <div class="hint" id="sceneCopy">When this scene enters view, the genre map starts tracing itself automatically.</div>
-          </div>
-          <div style="display:flex; align-items:center; gap:10px;">
-            <div class="year-badge" id="yearBadge">2013</div>
-            <button class="button" id="replayBtn" type="button">Replay</button>
-          </div>
-        </div>
-        <div class="progress-shell">
-          <div class="progress-fill" id="progressFill"></div>
-        </div>
-        <div class="timeline" id="timelineChips"></div>
-        <div class="hint">
-          Click a genre pill to isolate its path. Hover bubbles for year-by-year stats. The scene pauses briefly at key years so the shifts can breathe.
-        </div>
-      </div>
-
-      <div class="summary-card">
-        <div class="title-sm">Resilience at a glance</div>
-        <div class="stat-grid">
-          <div class="stat">
-            <div class="stat-label" id="stat1Label">Most crowded</div>
-            <div class="stat-value" id="stat1Value">Action</div>
-          </div>
-          <div class="stat">
-            <div class="stat-label" id="stat2Label">Highest quality</div>
-            <div class="stat-value" id="stat2Value">Adventure</div>
-          </div>
-          <div class="stat">
-            <div class="stat-label" id="stat3Label">Best hit rate</div>
-            <div class="stat-value" id="stat3Value">RPG</div>
-          </div>
-        </div>
-        <div class="summary-copy" id="summaryCopy">
-          In 2013 the genre field is still compact. Over time the market expands outward, but genres do not move together.
-        </div>
-      </div>
+    <div class="topbar">
+      <div class="hint">Click a genre pill to isolate its path. Hover bubbles for year-by-year stats.</div>
     </div>
 
     <div class="legend" id="legend"></div>
 
     <div id="vizWrap">
       <svg id="chart" viewBox="0 0 1040 720" aria-label="Genre resilience chart"></svg>
+      <div class="chart-controls">
+        <div class="year-inline">
+          <span>Timeline</span>
+          <strong id="yearInline">2013</strong>
+          <span id="sceneCopy">The field is still compact before crowding begins to fan outward.</span>
+        </div>
+        <input class="year-slider" id="yearSlider" type="range" min="2013" max="2024" step="0.01" value="2013" />
+      </div>
     </div>
   </div>
 
@@ -386,20 +277,10 @@
 
     const svg = document.getElementById("chart");
     const tooltip = document.getElementById("tooltip");
-    const yearBadge = document.getElementById("yearBadge");
-    const progressFill = document.getElementById("progressFill");
-    const replayBtn = document.getElementById("replayBtn");
-    const timelineChips = document.getElementById("timelineChips");
+    const yearInline = document.getElementById("yearInline");
+    const yearSlider = document.getElementById("yearSlider");
     const sceneCopy = document.getElementById("sceneCopy");
-    const summaryCopy = document.getElementById("summaryCopy");
     const legend = document.getElementById("legend");
-
-    const stat1Label = document.getElementById("stat1Label");
-    const stat1Value = document.getElementById("stat1Value");
-    const stat2Label = document.getElementById("stat2Label");
-    const stat2Value = document.getElementById("stat2Value");
-    const stat3Label = document.getElementById("stat3Label");
-    const stat3Value = document.getElementById("stat3Value");
 
     const NS = "http://www.w3.org/2000/svg";
     const W = 1040;
@@ -502,6 +383,18 @@
       return node;
     }
 
+    function lineBreakText(parent, lines, x, y, attrs = {}, lineHeight = 14) {
+      const text = create("text", { x, y, ...attrs }, parent);
+      lines.forEach((line, idx) => {
+        const tspan = document.createElementNS(NS, "tspan");
+        tspan.setAttribute("x", x);
+        tspan.setAttribute("dy", idx === 0 ? 0 : lineHeight);
+        tspan.textContent = line;
+        text.appendChild(tspan);
+      });
+      return text;
+    }
+
     const defs = create("defs");
     const filter = create("filter", { id: "glow", x: "-40%", y: "-40%", width: "180%", height: "180%" }, defs);
     create("feGaussianBlur", { stdDeviation: "8", result: "blur" }, filter);
@@ -514,6 +407,19 @@
     function drawStatic() {
       staticLayer.innerHTML = "";
 
+      const bgGrad = create("linearGradient", { id: "bgFade", x1: "0%", y1: "0%", x2: "0%", y2: "100%" }, defs);
+      bgGrad.innerHTML = `
+        <stop offset="0%" stop-color="rgba(255,255,255,0.99)"></stop>
+        <stop offset="100%" stop-color="rgba(249,250,252,0.98)"></stop>
+      `;
+
+      const crowdGrad = create("linearGradient", { id: "crowdShade", x1: "0%", y1: "0%", x2: "100%", y2: "0%" }, defs);
+      crowdGrad.innerHTML = `
+        <stop offset="0%" stop-color="rgba(15,23,42,0.02)"></stop>
+        <stop offset="58%" stop-color="rgba(15,23,42,0.02)"></stop>
+        <stop offset="100%" stop-color="rgba(230,57,70,0.12)"></stop>
+      `;
+
       create("rect", {
         x: 0,
         y: 0,
@@ -523,11 +429,14 @@
         fill: "url(#bgFade)"
       }, staticLayer);
 
-      const bgGrad = create("linearGradient", { id: "bgFade", x1: "0%", y1: "0%", x2: "0%", y2: "100%" }, defs);
-      bgGrad.innerHTML = `
-        <stop offset="0%" stop-color="rgba(255,255,255,0.99)"></stop>
-        <stop offset="100%" stop-color="rgba(249,250,252,0.98)"></stop>
-      `;
+      create("rect", {
+        x: margin.left,
+        y: margin.top,
+        width: innerW,
+        height: innerH,
+        rx: 24,
+        fill: "url(#crowdShade)"
+      }, staticLayer);
 
       [60, 70, 80].forEach(value => {
         const y = yScale(value);
@@ -629,26 +538,35 @@
       }, staticLayer);
       xLabel.textContent = "Games released in that genre that year (competition volume, log scale)";
 
-      create("rect", {
-        x: W - margin.right - 108,
-        y: margin.top + 12,
-        width: 88,
-        height: innerH - 24,
-        rx: 20,
-        fill: "rgba(29, 53, 87, 0.03)",
-        stroke: "rgba(29, 53, 87, 0.06)",
-        "stroke-dasharray": "4 6"
-      }, staticLayer);
-
-      const winnerLabel = create("text", {
-        x: W - margin.right - 64,
-        y: margin.top + 32,
-        fill: "#5f6c7b",
+      lineBreakText(staticLayer, ["FLOODED", "MARKET"], W - margin.right - 42, margin.top + innerH / 2 - 44, {
+        fill: "rgba(230,57,70,0.16)",
         "font-family": "Segoe UI, sans-serif",
-        "font-size": 11,
-        "text-anchor": "middle"
-      }, staticLayer);
-      winnerLabel.textContent = "crowded";
+        "font-size": 28,
+        "font-weight": 800,
+        "text-anchor": "middle",
+        transform: `rotate(90 ${W - margin.right - 42} ${margin.top + innerH / 2 - 44})`
+      }, 28);
+
+      lineBreakText(staticLayer, ["Resilience", "Zone"], W - margin.right - 158, margin.top + 46, {
+        fill: "#102a43",
+        "font-family": "Segoe UI, sans-serif",
+        "font-size": 13,
+        "font-weight": 700
+      }, 14);
+
+      lineBreakText(staticLayer, ["Best hit-rate", "lane"], margin.left + 18, margin.top + 46, {
+        fill: "#102a43",
+        "font-family": "Segoe UI, sans-serif",
+        "font-size": 13,
+        "font-weight": 700
+      }, 14);
+
+      lineBreakText(staticLayer, ["The Overcrowded", "Market"], W - margin.right - 214, H - margin.bottom - 112, {
+        fill: "#102a43",
+        "font-family": "Segoe UI, sans-serif",
+        "font-size": 13,
+        "font-weight": 700
+      }, 14);
     }
 
     function buildLegend() {
@@ -675,24 +593,6 @@
           render();
         });
         legend.appendChild(item);
-      });
-    }
-
-    function buildTimeline() {
-      timelineChips.innerHTML = "";
-      KEY_YEARS.forEach(year => {
-        const chip = document.createElement("button");
-        chip.type = "button";
-        chip.className = "chip";
-        chip.textContent = year;
-        chip.addEventListener("click", () => {
-          state.yearFloat = year;
-          state.playing = false;
-          state.pauseUntil = 0;
-          state.lastTs = null;
-          render();
-        });
-        timelineChips.appendChild(chip);
       });
     }
 
@@ -726,19 +626,57 @@
       tooltip.classList.remove("show");
     }
 
+    function dynamicNarrative(currentYear, focus) {
+      if (focus) {
+        if (currentYear <= 2015) return `${focus} begins in a relatively open lane before the flood really accelerates.`;
+        if (currentYear <= 2019) return `${focus} is pushed rightward as releases surge. The test is whether quality can hold.`;
+        if (currentYear <= 2022) return `${focus} is now in the crowded years, where resilient genres start separating from overwhelmed ones.`;
+        return `${focus} reaches the late-market endpoint inside a flooded field, with resilience defined by quality retention.`;
+      }
+      if (currentYear <= 2015) return "Genres still cluster together before crowding fully fans outward.";
+      if (currentYear <= 2019) return "Release volume accelerates and the paths start pulling into distinct resilience patterns.";
+      if (currentYear <= 2022) return "Most genres are now deep in the crowded half of the map, but only some keep climbing in quality.";
+      return "By 2024, the right side is packed: Action owns scale, Adventure keeps the cleanest quality, and RPG preserves the strongest hit rate.";
+    }
+
+    function annotateGenre(parent, datum, lines, options = {}) {
+      const cx = xScale(datum.game_count);
+      const cy = yScale(datum.avg_pos_pct);
+      const dx = options.dx ?? 14;
+      const dy = options.dy ?? -16;
+      const anchor = options.anchor ?? "start";
+      const x = cx + dx;
+      const y = cy + dy;
+
+      create("line", {
+        x1: cx,
+        y1: cy,
+        x2: cx + (dx > 0 ? dx - 6 : dx + 6),
+        y2: cy + (dy > 0 ? dy - 4 : dy + 4),
+        stroke: "rgba(15, 23, 42, 0.16)",
+        "stroke-width": 1.2
+      }, parent);
+
+      const label = lineBreakText(parent, lines, x, y, {
+        fill: options.color || "#102a43",
+        "font-family": "Segoe UI, sans-serif",
+        "font-size": options.size || 12,
+        "font-weight": options.weight || 700,
+        "text-anchor": anchor
+      }, options.lineHeight || 14);
+
+      if (options.subtle) label.setAttribute("opacity", "0.84");
+    }
+
     function render() {
       dynamicLayer.innerHTML = "";
       hoverLayer.innerHTML = "";
 
       const focus = currentFocus();
       const currentYear = Math.round(state.yearFloat);
-      const progress = ((state.yearFloat - YEARS[0]) / (YEARS[YEARS.length - 1] - YEARS[0])) * 100;
-      yearBadge.textContent = currentYear;
-      progressFill.style.width = `${progress}%`;
-
-      [...timelineChips.children].forEach(node => {
-        node.classList.toggle("active", Number(node.textContent) === currentYear);
-      });
+      yearInline.textContent = currentYear;
+      yearSlider.value = state.yearFloat;
+      sceneCopy.textContent = dynamicNarrative(currentYear, focus);
 
       [...legend.querySelectorAll(".legend-item")].forEach((node, idx) => {
         const genre = GENRES[idx];
@@ -823,69 +761,29 @@
             opacity: focus === genre ? 1 : 0.86
           }, hoverLayer);
           label.textContent = genre;
+
+          if (Math.round(state.yearFloat) >= 2024 && !focus) {
+            if (genre === "Adventure") {
+              annotateGenre(hoverLayer, current, [
+                "Adventure",
+                `${formatPct(current.avg_pos_pct)} positive`
+              ], { dx: 18, dy: -34, color: COLORS[genre] });
+            }
+            if (genre === "Action") {
+              annotateGenre(hoverLayer, current, [
+                "Action",
+                `${formatCount(Math.round(current.game_count))} releases`
+              ], { dx: 18, dy: 26, color: COLORS[genre] });
+            }
+            if (genre === "RPG") {
+              annotateGenre(hoverLayer, current, [
+                "RPG",
+                `Hit rate: ${current.hit_rate.toFixed(2)}%`
+              ], { dx: -18, dy: -28, anchor: "end", color: COLORS[genre] });
+            }
+          }
         }
       });
-
-      updateSummary(currentSeries, currentYear, focus);
-    }
-
-    function updateSummary(series, currentYear, focus) {
-      const mostCrowded = [...series].sort((a, b) => b.game_count - a.game_count)[0];
-      const highestQuality = [...series].sort((a, b) => b.avg_pos_pct - a.avg_pos_pct)[0];
-      const bestHitRate = [...series].sort((a, b) => b.hit_rate - a.hit_rate)[0];
-
-      if (focus) {
-        const current = getInterpolated(focus, state.yearFloat);
-        const start = grouped[focus][0];
-        const currentRounded = grouped[focus].find(d => d.release_year === currentYear) || current;
-        const qualityDelta = current.avg_pos_pct - start.avg_pos_pct;
-        const crowdDelta = current.game_count / start.game_count;
-        const hitDelta = current.hit_rate - start.hit_rate;
-
-        stat1Label.textContent = "Competition";
-        stat1Value.textContent = `${formatCount(Math.round(current.game_count))} releases`;
-        stat2Label.textContent = "Quality";
-        stat2Value.textContent = formatPct(current.avg_pos_pct);
-        stat3Label.textContent = "Hit rate";
-        stat3Value.textContent = `${current.hit_rate.toFixed(2)}%`;
-
-        summaryCopy.textContent =
-          `${focus} has moved from ${formatCount(start.game_count)} releases in 2013 to ${formatCount(Math.round(current.game_count))} by ${currentYear}. ` +
-          `That is a ${crowdDelta.toFixed(1)}x crowding increase, while average positivity ${qualityDelta >= 0 ? "rose" : "fell"} ` +
-          `${Math.abs(qualityDelta).toFixed(1)} points and hit rate changed ${hitDelta >= 0 ? "by +" : "by "}${hitDelta.toFixed(2)} points.`;
-
-        if (currentYear <= 2014) {
-          sceneCopy.textContent = `${focus} starts in a relatively uncrowded lane, before the flood really accelerates.`;
-        } else if (currentYear <= 2018) {
-          sceneCopy.textContent = `${focus} is being pushed rightward as release volume rises. The question is whether quality can hold.`;
-        } else if (currentYear <= 2022) {
-          sceneCopy.textContent = `${focus} is now deep in the crowded years. This is where resilient genres separate from overwhelmed ones.`;
-        } else {
-          sceneCopy.textContent = `${focus} reaches the late-market endpoint with competition fully expanded and the middle of the market already thinned out.`;
-        }
-        return;
-      }
-
-      stat1Label.textContent = "Most crowded";
-      stat1Value.textContent = mostCrowded.primary_genre;
-      stat2Label.textContent = "Highest quality";
-      stat2Value.textContent = highestQuality.primary_genre;
-      stat3Label.textContent = "Best hit rate";
-      stat3Value.textContent = bestHitRate.primary_genre;
-
-      sceneCopy.textContent =
-        currentYear <= 2014
-          ? "The field is still compressed. Genres begin close together before release volume fans outward."
-          : currentYear <= 2018
-          ? "Crowding accelerates and the trajectories start to separate into distinct genre survival paths."
-          : currentYear <= 2022
-          ? "This is the stress test period: most genres are far to the right, but only some keep climbing in quality."
-          : "By the endpoint, the right side is packed. Resilience now means holding quality inside an already flooded market.";
-
-      summaryCopy.textContent =
-        `In ${currentYear}, ${mostCrowded.primary_genre} is the most crowded lane with ${formatCount(Math.round(mostCrowded.game_count))} releases. ` +
-        `${highestQuality.primary_genre} currently posts the highest average positivity at ${formatPct(highestQuality.avg_pos_pct)}, ` +
-        `while ${bestHitRate.primary_genre} keeps the strongest hit rate at ${bestHitRate.hit_rate.toFixed(2)}%.`;
     }
 
     function startPlayback(reset = false) {
@@ -938,11 +836,16 @@
       state.raf = requestAnimationFrame(tick);
     }
 
-    replayBtn.addEventListener("click", () => startPlayback(true));
+    yearSlider.addEventListener("input", () => {
+      state.yearFloat = Number(yearSlider.value);
+      state.playing = false;
+      state.pauseUntil = 0;
+      state.lastTs = null;
+      render();
+    });
 
     drawStatic();
     buildLegend();
-    buildTimeline();
     render();
 
     const observer = new IntersectionObserver(entries => {

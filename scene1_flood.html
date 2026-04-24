@@ -65,10 +65,10 @@
     }
 
     .controls {
-      display: grid;
-      grid-template-columns: auto 1fr auto auto;
-      gap: 14px;
+      display: flex;
+      justify-content: space-between;
       align-items: center;
+      gap: 14px;
       margin-bottom: 18px;
       padding: 12px 14px;
       border: 1px solid var(--line);
@@ -76,33 +76,17 @@
       background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(248,250,252,0.96));
     }
 
-    .ctrl-label,
-    .year-display,
+    .ctrl-copy,
     .play-btn,
     .hint,
     .legend {
       font-family: "Segoe UI", sans-serif;
     }
 
-    .ctrl-label {
+    .ctrl-copy {
       color: var(--muted);
       font-size: 0.85rem;
-      font-weight: 600;
-    }
-
-    input[type="range"] {
-      width: 100%;
-      accent-color: var(--accent);
-      cursor: ew-resize;
-    }
-
-    .year-display {
-      min-width: 56px;
-      text-align: right;
-      color: var(--accent);
-      font-size: 1.15rem;
-      font-weight: 700;
-      font-variant-numeric: tabular-nums;
+      line-height: 1.4;
     }
 
     .play-btn {
@@ -205,12 +189,9 @@
       }
 
       .controls {
-        grid-template-columns: 1fr;
+        flex-direction: column;
+        align-items: flex-start;
         gap: 10px;
-      }
-
-      .year-display {
-        text-align: left;
       }
     }
   </style>
@@ -221,13 +202,11 @@
     <h1>The Flood</h1>
     <p class="subtitle">
       Steam's catalog opens, the indie tide rises, and the release curve turns into a wall.
-      Drag slowly to scrub the surge, or let it reveal itself automatically.
+      The animation plays on its own so the surge reads as a market-wide flood instead of a manual control.
     </p>
 
     <div class="controls">
-      <span class="ctrl-label">Reveal Through Year</span>
-      <input type="range" id="yearSlider" min="2008" max="2024" value="2008" step="0.01" />
-      <span class="year-display" id="yearDisplay">2008</span>
+      <span class="ctrl-copy">The chart reveals itself from 2008 to 2024 automatically. Use replay if you want to watch the rise again.</span>
       <button class="play-btn" id="playBtn">Replay</button>
     </div>
 
@@ -235,7 +214,7 @@
       <div class="legend-item"><span class="swatch" style="background: var(--indie);"></span><span>Indie</span></div>
       <div class="legend-item"><span class="swatch" style="background: var(--non);"></span><span>Non-Indie</span></div>
     </div>
-    <div class="hint">The filled shape glides with your drag so the flood feels continuous instead of stepping year by year.</div>
+    <div class="hint">Hover any year band for exact counts and indie share.</div>
 
     <div id="mainWrap"></div>
   </section>
@@ -279,8 +258,6 @@
     const lastYear = years[years.length - 1];
 
     const tooltip = document.getElementById("tooltip");
-    const slider = document.getElementById("yearSlider");
-    const yearDisplay = document.getElementById("yearDisplay");
     const playBtn = document.getElementById("playBtn");
 
     const styles = getComputedStyle(document.documentElement);
@@ -526,17 +503,12 @@
     let autoplayRaf = null;
     let autoplayStarted = false;
 
-    function renderYearLabel(value) {
-      yearDisplay.textContent = Math.round(value);
-    }
-
     function tick() {
       currentValue += (targetValue - currentValue) * 0.14;
       if (Math.abs(targetValue - currentValue) < 0.001) {
         currentValue = targetValue;
       }
       updateMain(currentValue);
-      renderYearLabel(currentValue);
 
       if (Math.abs(targetValue - currentValue) >= 0.001) {
         rafId = requestAnimationFrame(tick);
@@ -556,11 +528,6 @@
       scheduleRender();
     }
 
-    slider.addEventListener("input", () => {
-      stopAutoplay();
-      setTarget(parseFloat(slider.value));
-    });
-
     function stopAutoplay() {
       if (autoplayRaf) {
         cancelAnimationFrame(autoplayRaf);
@@ -574,9 +541,7 @@
       if (fromStart) {
         currentValue = firstYear;
         targetValue = firstYear;
-        slider.value = String(firstYear);
         updateMain(firstYear);
-        renderYearLabel(firstYear);
       }
 
       let start = null;
@@ -592,7 +557,6 @@
         const t = Math.min(1, elapsed / duration);
         const eased = 1 - Math.pow(1 - t, 3);
         const value = firstYear + (lastYear - firstYear) * eased;
-        slider.value = String(value);
         setTarget(value);
 
         if (t < 1) {
@@ -624,7 +588,6 @@
     currentValue = firstYear;
     targetValue = firstYear;
     updateMain(currentValue);
-    renderYearLabel(firstYear);
 
     setTimeout(() => {
       if (!autoplayStarted) {

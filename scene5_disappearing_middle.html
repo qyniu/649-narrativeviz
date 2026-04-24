@@ -56,42 +56,45 @@
       margin-bottom: 18px;
     }
 
-    .controls {
-      display: grid;
-      grid-template-columns: 1.2fr 1fr;
-      gap: 14px;
-      margin-bottom: 12px;
-    }
-
-    .control-card,
-    .summary-card {
-      border: 1px solid var(--line);
-      border-radius: 16px;
-      background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(248,250,252,0.96));
-      padding: 14px;
-    }
-
-    .title-sm,
+    .toolbar,
     .pill,
-    .hint,
-    .legend,
-    .stat-label,
-    .stat-value,
-    .summary-copy {
+    .toolbar-copy,
+    .toolbar-label {
       font-family: "Segoe UI", sans-serif;
     }
 
-    .title-sm {
-      font: 700 0.95rem/1.3 "Segoe UI", sans-serif;
-      color: #102a43;
-      margin-bottom: 10px;
+    .toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 12px;
+      padding: 10px 0 14px;
+      border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+      font-size: 0;
+    }
+
+    .toolbar-copy {
+      color: var(--muted);
+      font-size: 0.84rem;
+      line-height: 1.5;
+      max-width: 620px;
+    }
+
+    .toolbar-label {
+      font-size: 0.76rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-right: 6px;
     }
 
     .pill-row {
       display: flex;
       gap: 8px;
       flex-wrap: wrap;
-      margin-bottom: 10px;
     }
 
     .pill {
@@ -113,80 +116,8 @@
       transform: translateY(-1px);
     }
 
-    .hint {
-      color: var(--muted);
-      font-size: 0.8rem;
-      line-height: 1.45;
-    }
-
-    .summary-card {
-      display: grid;
-      gap: 10px;
-      align-content: start;
-    }
-
-    .stat-grid {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 10px;
-    }
-
-    .stat {
-      border-radius: 14px;
-      border: 1px solid rgba(15, 23, 42, 0.08);
-      background: rgba(255,255,255,0.72);
-      padding: 10px;
-    }
-
-    .stat-label {
-      color: var(--muted);
-      font-size: 0.76rem;
-      margin-bottom: 6px;
-    }
-
-    .stat-value {
-      font: 800 1.08rem/1.15 "Segoe UI", sans-serif;
-      color: #102a43;
-    }
-
-    .summary-copy {
-      color: var(--muted);
-      font-size: 0.83rem;
-      line-height: 1.5;
-    }
-
-    .legend {
-      display: flex;
-      gap: 12px;
-      align-items: center;
-      flex-wrap: wrap;
-      color: var(--muted);
-      font-size: 0.8rem;
-      margin-bottom: 10px;
-    }
-
-    .legend-item {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-      cursor: pointer;
-      user-select: none;
-    }
-
-    .legend-item.muted {
-      opacity: 0.35;
-    }
-
-    .swatch {
-      width: 12px;
-      height: 12px;
-      border-radius: 999px;
-    }
-
     #vizWrap {
       width: 100%;
-      border-top: 1px solid rgba(15, 23, 42, 0.05);
-      padding-top: 12px;
       position: relative;
     }
 
@@ -212,6 +143,9 @@
       font: 12px/1.55 "Segoe UI", sans-serif;
       min-width: 220px;
       max-width: 280px;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+      white-space: normal;
     }
 
     .tooltip.show {
@@ -221,14 +155,6 @@
     @media (max-width: 900px) {
       .scene {
         padding: 10px 10px 6px;
-      }
-
-      .controls {
-        grid-template-columns: 1fr;
-      }
-
-      .stat-grid {
-        grid-template-columns: 1fr;
       }
 
       canvas {
@@ -245,41 +171,18 @@
       Here the market splits into two poles. In 2013, review outcomes still spread upward across the ladder. By 2024, most points collapse into the bottom floor while only a tiny elite remains aloft. Use the filters to isolate indie games and watch how the missing middle becomes even clearer.
     </p>
 
-    <div class="controls">
-      <div class="control-card">
-        <div class="title-sm">Filters</div>
-        <div class="pill-row">
-          <button class="pill active" data-filter="all">All Games</button>
-          <button class="pill" data-filter="indie">Indie Only</button>
-        </div>
-        <div class="hint">
+    <div class="toolbar">
+      <div class="toolbar-copy">
+        Each dot is one game. The teal bridge marks the shrinking middle tier, while the 2024 side labels show how much of the market now settles at the floor.
+      </div>
+      <div class="pill-row" aria-label="Filter view">
+        <span class="toolbar-label">View</span>
+        <button class="pill active" data-filter="all">All Games</button>
+        <button class="pill" data-filter="indie">Indie Only</button>
+      </div>
           Each dot is one game. Left column: 2013. Right column: 2024. Vertical position uses a log review scale, so “falling to the bottom” means the game never escaped invisibility.
-        </div>
-      </div>
 
-      <div class="summary-card">
-        <div class="title-sm">Yearly survival snapshot</div>
-        <div class="stat-grid">
-          <div class="stat">
-            <div class="stat-label">Ghost share</div>
-            <div class="stat-value" id="ghostStat">83.3%</div>
-          </div>
-          <div class="stat">
-            <div class="stat-label">Modest share</div>
-            <div class="stat-value" id="modestStat">7.0%</div>
-          </div>
-          <div class="stat">
-            <div class="stat-label">Hit share</div>
-            <div class="stat-value" id="hitStat">5.7%</div>
-          </div>
-        </div>
-        <div class="summary-copy" id="summaryCopy">
-          In 2013, the middle of the market was still visible: modest and hit games together formed a meaningful vertical band instead of a few isolated specks.
-        </div>
-      </div>
     </div>
-
-    <div class="legend" id="legend"></div>
     <div id="vizWrap">
       <canvas id="chart"></canvas>
     </div>
@@ -299,14 +202,8 @@
     const ctx = canvas.getContext("2d");
     const tooltip = document.getElementById("tooltip");
     const pills = Array.from(document.querySelectorAll(".pill"));
-    const legend = document.getElementById("legend");
-    const ghostStat = document.getElementById("ghostStat");
-    const modestStat = document.getElementById("modestStat");
-    const hitStat = document.getElementById("hitStat");
-    const summaryCopy = document.getElementById("summaryCopy");
 
     let activeFilter = "all";
-    let highlightedBucket = null;
     let renderedPoints = [];
     let dimensions = null;
 
@@ -334,36 +231,26 @@
       return POINTS.filter((d) => activeFilter === "all" || d.isIndie);
     }
 
-    function updateLegend() {
-      legend.innerHTML = "";
-      ORDER.forEach((bucket) => {
-        const item = document.createElement("div");
-        item.className = "legend-item" + (highlightedBucket && highlightedBucket !== bucket ? " muted" : "");
-        item.innerHTML = `<span class="swatch" style="background:${COLORS[bucket]}"></span><span>${LABELS[bucket]}</span>`;
-        item.onclick = () => {
-          highlightedBucket = highlightedBucket === bucket ? null : bucket;
-          updateLegend();
-          draw();
-        };
-        legend.appendChild(item);
-      });
+    function statsForYear(year) {
+      const yearPoints = filteredPoints().filter((d) => d.year === year);
+      const total = yearPoints.length || 1;
+      const pct = (bucket) => yearPoints.filter((d) => d.bucket === bucket).length / total * 100;
+      return {
+        total,
+        ghost: pct("0"),
+        modest: pct("100-999"),
+        hit: pct("1K-9999"),
+        major: pct("10K-99K"),
+        micro: pct("1-9") + pct("10-99")
+      };
     }
 
-    function updateSummary(year, bucketKey = "100-999") {
-      const filtered = filteredPoints().filter((d) => d.year === year);
-      const total = filtered.length || 1;
-      const bucketPct = (bucket) => filtered.filter((d) => d.bucket === bucket).length / total * 100;
-      const nowPct = bucketPct(bucketKey);
-      const year2013 = filteredPoints().filter((d) => d.year === 2013);
-      const year2024 = filteredPoints().filter((d) => d.year === 2024);
-      const pctIn = (arr, bucket) => arr.length ? arr.filter((d) => d.bucket === bucket).length / arr.length * 100 : 0;
-
-      ghostStat.textContent = `${bucketPct("0").toFixed(1)}%`;
-      modestStat.textContent = `${bucketPct("100-999").toFixed(1)}%`;
-      hitStat.textContent = `${bucketPct("1K-9999").toFixed(1)}%`;
-
-      summaryCopy.textContent =
-        `In ${year}, ${LABELS[bucketKey]} games were ${nowPct.toFixed(1)}% of this view. In 2013 they were ${pctIn(year2013, bucketKey).toFixed(1)}%; by 2024 they were ${pctIn(year2024, bucketKey).toFixed(1)}%.`;
+    function annotationCopy(year) {
+      const stats = statsForYear(year);
+      if (year === 2013) {
+        return `2013 still leaves a visible middle: ${stats.modest.toFixed(1)}% of games sit in the 100-999 review band.`;
+      }
+      return `${stats.ghost.toFixed(1)}% of games now fall into the invisible floor, while the middle shrinks to ${stats.modest.toFixed(1)}%.`;
     }
 
     function tooltipHtml(point) {
@@ -449,11 +336,42 @@
       };
     }
 
+    function drawBand(y0, y1, color) {
+      ctx.save();
+      ctx.fillStyle = color;
+      ctx.fillRect(dimensions.margin.left, y0, dimensions.width - dimensions.margin.left - dimensions.margin.right, y1 - y0);
+      ctx.restore();
+    }
+
+    function drawConnector(layout) {
+      const leftTop = layout.yScale(999);
+      const leftBottom = layout.yScale(100);
+      const rightTop = layout.yScale(520);
+      const rightBottom = layout.yScale(100);
+      ctx.save();
+      const gradient = ctx.createLinearGradient(layout.columnX[2013], 0, layout.columnX[2024], 0);
+      gradient.addColorStop(0, "rgba(42, 157, 143, 0.18)");
+      gradient.addColorStop(1, "rgba(42, 157, 143, 0.06)");
+      ctx.fillStyle = gradient;
+      ctx.beginPath();
+      ctx.moveTo(layout.columnX[2013] + 18, leftTop);
+      ctx.bezierCurveTo(layout.columnX[2013] + 88, leftTop + 10, layout.columnX[2024] - 88, rightTop + 12, layout.columnX[2024] - 18, rightTop);
+      ctx.lineTo(layout.columnX[2024] - 18, rightBottom);
+      ctx.bezierCurveTo(layout.columnX[2024] - 88, rightBottom - 8, layout.columnX[2013] + 88, leftBottom - 10, layout.columnX[2013] + 18, leftBottom);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    }
+
     function drawAxes(layout) {
       const { width, height, margin } = dimensions;
-      const { innerHeight } = layout;
       ctx.save();
       ctx.translate(0.5, 0.5);
+
+      drawBand(layout.yScale(999), layout.yScale(100), "rgba(42, 157, 143, 0.05)");
+      drawBand(layout.yScale(9999), layout.yScale(1000), "rgba(244, 162, 97, 0.045)");
+      drawBand(layout.yScale(10), layout.yScale(0), "rgba(201, 208, 214, 0.18)");
+
       ctx.strokeStyle = "rgba(15, 23, 42, 0.08)";
       ctx.fillStyle = "#5f6c7b";
       ctx.font = "11px Segoe UI";
@@ -468,22 +386,23 @@
         ctx.fillText(tick === 0 ? "0" : d3Format(tick), 14, y + 4);
       });
 
+      ctx.fillStyle = "#102a43";
+      ctx.font = "700 12px Segoe UI";
+      ctx.textAlign = "left";
+      ctx.fillText("Total Reviews (log scale)", margin.left, 18);
+
       Object.entries(layout.columnX).forEach(([year, x]) => {
+        const stats = statsForYear(Number(year));
         ctx.fillStyle = "#102a43";
         ctx.font = "700 18px Segoe UI";
         ctx.textAlign = "center";
-        ctx.fillText(year, x, height - 12);
+        ctx.fillText(year, x, height - 22);
+        ctx.font = "11px Segoe UI";
+        ctx.fillStyle = "#5f6c7b";
+        fitText(`Ghost ${stats.ghost.toFixed(1)}% · Modest ${stats.modest.toFixed(1)}% · Hit ${stats.hit.toFixed(1)}%`, x, height - 4, 250, 11, 8);
       });
 
-      ctx.save();
-      ctx.translate(20, margin.top + innerHeight / 2);
-      ctx.rotate(-Math.PI / 2);
-      ctx.textAlign = "center";
-      ctx.fillStyle = "#5f6c7b";
-      ctx.font = "12px Segoe UI";
-      ctx.fillText("Total Reviews (log scale)", 0, 0);
-      ctx.restore();
-
+      drawConnector(layout);
       ctx.restore();
     }
 
@@ -492,15 +411,82 @@
       return String(value);
     }
 
-    function drawGuide(layout) {
-      if (!hoveredYear) return;
+    function wrapText(text, x, y, maxWidth, lineHeight) {
+      ctx.textAlign = "left";
+      const words = text.split(" ");
+      let line = "";
+      let rowY = y;
+      words.forEach((word) => {
+        const testLine = line ? `${line} ${word}` : word;
+        if (ctx.measureText(testLine).width > maxWidth && line) {
+          ctx.fillText(line, x, rowY);
+          line = word;
+          rowY += lineHeight;
+        } else {
+          line = testLine;
+        }
+      });
+      if (line) ctx.fillText(line, x, rowY);
+    }
+
+    function fitText(text, x, y, maxWidth, baseFont = 11, minFont = 9, fontWeight = 400) {
+      let fontSize = baseFont;
+      ctx.textAlign = "center";
+      while (fontSize > minFont) {
+        ctx.font = `${fontWeight} ${fontSize}px Segoe UI`;
+        if (ctx.measureText(text).width <= maxWidth) break;
+        fontSize -= 1;
+      }
+      ctx.fillText(text, x, y);
+    }
+
+    function drawAnnotations(layout) {
+      const activeYear = hoveredPoint ? hoveredPoint.year : hoveredYear;
+      const noteY = dimensions.margin.top + 18;
+      const lineY = dimensions.margin.top + 40;
+      const noteWidth = 276;
+      const noteX = layout.columnX[activeYear] - noteWidth / 2;
+      const noteHeight = 62;
+
       ctx.save();
-      ctx.strokeStyle = "rgba(29, 53, 87, 0.28)";
-      ctx.lineWidth = 1.2;
+      ctx.fillStyle = "rgba(255,255,255,0.94)";
+      ctx.strokeStyle = "rgba(15, 23, 42, 0.12)";
+      ctx.lineWidth = 1;
       ctx.beginPath();
-      ctx.moveTo(layout.columnX[hoveredYear], dimensions.margin.top);
-      ctx.lineTo(layout.columnX[hoveredYear], dimensions.height - dimensions.margin.bottom + 4);
+      ctx.roundRect(noteX, noteY, noteWidth, noteHeight, 14);
+      ctx.fill();
       ctx.stroke();
+      ctx.fillStyle = "#102a43";
+      fitText(
+        activeYear === 2013 ? "Middle still visible" : "The floor takes over",
+        noteX + noteWidth / 2,
+        noteY + 20,
+        noteWidth - 28,
+        13,
+        10,
+        700
+      );
+      ctx.fillStyle = "#5f6c7b";
+      ctx.font = "12px Segoe UI";
+      wrapText(annotationCopy(activeYear), noteX + 16, noteY + 38, noteWidth - 32, 14);
+
+      ctx.fillStyle = "#2a9d8f";
+      ctx.font = "700 13px Segoe UI";
+      ctx.fillText("Modest tier (100-999 reviews)", layout.columnX[2024] + 108, layout.yScale(250) + 4);
+
+      ctx.fillStyle = "#98a2ad";
+      ctx.font = "700 13px Segoe UI";
+      ctx.fillText("Ghost tier (0 reviews)", layout.columnX[2024] + 108, layout.yScale(0) - 18);
+
+      const stats2024 = statsForYear(2024);
+      ctx.fillStyle = "#98a2ad";
+      ctx.font = "12px Segoe UI";
+      wrapText(`${stats2024.ghost.toFixed(1)}% of games now end up here`, layout.columnX[2024] + 108, layout.yScale(0) + 2, 150, 15);
+
+      ctx.fillStyle = "#102a43";
+      ctx.font = "700 12px Segoe UI";
+      ctx.textAlign = "center";
+      ctx.fillText("Shrinking middle", (layout.columnX[2013] + layout.columnX[2024]) / 2, lineY);
       ctx.restore();
     }
 
@@ -515,15 +501,14 @@
       drawAxes(layout);
 
       renderedPoints.forEach((point) => {
-        const muted = highlightedBucket && highlightedBucket !== point.bucket;
         ctx.beginPath();
         ctx.fillStyle = COLORS[point.bucket];
-        ctx.globalAlpha = muted ? 0.16 : 0.88;
+        ctx.globalAlpha = point.year === hoveredYear || hoveredPoint?.year === point.year ? 0.92 : 0.8;
         ctx.arc(point.cx, point.cy, point.r, 0, Math.PI * 2);
         ctx.fill();
       });
       ctx.globalAlpha = 1;
-      drawGuide(layout);
+      drawAnnotations(layout);
 
       if (hoveredPoint) {
         ctx.beginPath();
@@ -554,14 +539,14 @@
       const mx = event.clientX - rect.left;
       const my = event.clientY - rect.top;
       hoveredPoint = nearestPoint(mx, my);
-      hoveredYear = Math.abs(mx - dimensions.width * 0.28) < Math.abs(mx - dimensions.width * 0.72) ? 2013 : 2024;
+      const year2013X = dimensions.margin.left + (dimensions.width - dimensions.margin.left - dimensions.margin.right) * 0.25;
+      const year2024X = dimensions.margin.left + (dimensions.width - dimensions.margin.left - dimensions.margin.right) * 0.75;
+      hoveredYear = Math.abs(mx - year2013X) < Math.abs(mx - year2024X) ? 2013 : 2024;
       if (hoveredPoint) {
         hoveredYear = hoveredPoint.year;
-        updateSummary(hoveredPoint.year, hoveredPoint.bucket);
         showTip(tooltipHtml(hoveredPoint), event);
       } else {
         hideTip();
-        updateSummary(hoveredYear, "100-999");
       }
       draw();
     });
@@ -570,7 +555,6 @@
       hoveredPoint = null;
       hoveredYear = 2013;
       hideTip();
-      updateSummary(2013, "100-999");
       draw();
     });
 
@@ -579,9 +563,7 @@
         activeFilter = pill.dataset.filter;
         pills.forEach((button) => button.classList.toggle("active", button === pill));
         hoveredPoint = null;
-        highlightedBucket = null;
-        updateLegend();
-        updateSummary(2013, "100-999");
+        hoveredYear = 2013;
         draw();
       });
     });
@@ -593,8 +575,6 @@
     });
     resizeObserver.observe(canvas);
 
-    updateLegend();
-    updateSummary(2013, "100-999");
     draw();
   </script>
 </body>

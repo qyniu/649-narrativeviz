@@ -16,6 +16,7 @@ HTML_REPLACEMENTS = {
     "chart1.html": "scene1_flood.html",
 }
 CUSTOM_HTML_BY_CELL_INDEX = {
+    4: "scene1_flood.html",
     6: "scene2_attention_gap.html",
     8: "scene3_survivor_simulator.html",
     10: "scene4_winner_takes_all.html",
