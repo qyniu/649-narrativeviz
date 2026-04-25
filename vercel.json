@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/",
-      "destination": "/scene2_sandbox_standalone.html"
+      "destination": "/0424draft01.html"
     }
   ]
 }
