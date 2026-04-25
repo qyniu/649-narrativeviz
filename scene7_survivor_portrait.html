@@ -27,7 +27,7 @@
     }
 
     .scene {
-      max-width: 1080px;
+      max-width: 1220px;
       margin: 0 auto;
       padding: 18px 18px 12px;
       background: var(--surface);
@@ -56,19 +56,21 @@
       margin-bottom: 18px;
     }
 
-    .controls {
-      display: grid;
-      grid-template-columns: 1.2fr 1fr;
-      gap: 14px;
-      margin-bottom: 12px;
-    }
-
-    .control-card,
-    .summary-card {
+    .ui-overlay {
+      position: absolute;
+      bottom: 86px;
+      left: 96px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 6px;
+      z-index: 10;
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(4px);
+      padding: 12px;
       border: 1px solid var(--line);
-      border-radius: 16px;
-      background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(248,250,252,0.96));
-      padding: 14px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
     }
 
     .title-sm,
@@ -84,45 +86,26 @@
     .title-sm {
       font: 700 0.95rem/1.3 "Segoe UI", sans-serif;
       color: #102a43;
-      margin-bottom: 10px;
+      margin-bottom: 6px;
     }
 
     .pill-row {
       display: flex;
       gap: 8px;
       flex-wrap: wrap;
-      margin-bottom: 10px;
-    }
-
-    .pill {
-      border: 1px solid var(--line);
-      border-radius: 999px;
-      padding: 8px 12px;
-      background: #f8fafc;
-      font-size: 0.82rem;
-      font-weight: 700;
-      color: var(--muted);
-      cursor: pointer;
-      transition: all 140ms ease;
-    }
-
-    .pill.active {
-      background: #e7eef8;
-      border-color: rgba(29, 53, 87, 0.22);
-      color: var(--accent);
-      transform: translateY(-1px);
-    }
-
-    .hint {
-      color: var(--muted);
-      font-size: 0.8rem;
-      line-height: 1.45;
+      justify-content: flex-start;
     }
 
     .summary-card {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(248,250,252,0.96));
+      padding: 14px;
+      margin-bottom: 16px;
       display: grid;
       gap: 10px;
       align-content: start;
+      min-height: 192px;
     }
 
     .stat-grid {
@@ -153,6 +136,40 @@
       color: var(--muted);
       font-size: 0.83rem;
       line-height: 1.5;
+      min-height: 2.4em;
+    }
+
+    @media (max-width: 880px) {
+      .stat-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .pill {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 8px 12px;
+      background: #f8fafc;
+      font-size: 0.86rem;
+      font-weight: 700;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 140ms ease;
+    }
+
+    .pill.active {
+      background: #e7eef8;
+      border-color: rgba(29, 53, 87, 0.22);
+      color: var(--accent);
+      transform: translateY(-1px);
+    }
+
+    .hint {
+      color: var(--muted);
+      font-size: 0.82rem;
+      line-height: 1.45;
+      max-width: 300px;
+      text-align: right;
     }
 
     .legend {
@@ -161,7 +178,7 @@
       align-items: center;
       flex-wrap: wrap;
       color: var(--muted);
-      font-size: 0.8rem;
+      font-size: 0.9rem;
       margin-bottom: 10px;
     }
 
@@ -187,14 +204,14 @@
     #vizWrap {
       width: 100%;
       border-top: 1px solid rgba(15, 23, 42, 0.05);
-      padding-top: 12px;
+      padding-top: 44px;
       position: relative;
     }
 
     canvas {
       display: block;
-      width: 100%;
-      height: 680px;
+      margin: 0 auto;
+      height: 760px;
       border-radius: 18px;
       background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(250,250,251,0.98));
     }
@@ -208,11 +225,11 @@
       border: 1px solid rgba(15, 23, 42, 0.12);
       box-shadow: 0 14px 40px rgba(15, 23, 42, 0.10);
       border-radius: 12px;
-      padding: 10px 12px;
+      padding: 12px 14px;
       color: var(--text);
-      font: 12px/1.55 "Segoe UI", sans-serif;
-      min-width: 230px;
-      max-width: 300px;
+      font: 13.5px/1.55 "Segoe UI", sans-serif;
+      min-width: 250px;
+      max-width: 320px;
     }
 
     .tooltip.show {
@@ -221,19 +238,9 @@
 
     .tooltip strong {
       display: block;
-      margin-bottom: 4px;
+      margin-bottom: 6px;
       color: #102a43;
-      font-size: 12.5px;
-    }
-
-    @media (max-width: 880px) {
-      .controls {
-        grid-template-columns: 1fr;
-      }
-
-      .stat-grid {
-        grid-template-columns: 1fr;
-      }
+      font-size: 14.5px;
     }
   </style>
 </head>
@@ -247,8 +254,34 @@
       The upper-right corner is the elite corridor: the tiny pocket where quality and scale meet.
     </p>
 
-    <div class="controls">
-      <div class="control-card">
+    <div class="summary-card">
+      <div class="title-sm">What survival looks like</div>
+      <div class="stat-grid">
+        <div class="stat">
+          <div class="stat-label">Survivors shown</div>
+          <div class="stat-value" id="stat1Value"></div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Free survivors</div>
+          <div class="stat-value" id="stat2Value"></div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Elite corner</div>
+          <div class="stat-value" id="stat3Value"></div>
+        </div>
+      </div>
+      <div class="summary-copy" id="summaryCopy"></div>
+    </div>
+
+    <div class="legend">
+      <div class="legend-item"><span class="swatch" style="background:#56c7bc"></span><span>Indie survivor</span></div>
+      <div class="legend-item"><span class="swatch" style="background:#d96b72"></span><span>AAA / Mid-size survivor</span></div>
+      <div class="legend-item"><span class="swatch ring"></span><span>Free-to-play survivor</span></div>
+      <div class="legend-item"><span class="swatch" style="background:#d8dee7"></span><span>Ghost background (failed games)</span></div>
+    </div>
+
+    <div id="vizWrap">
+      <div class="ui-overlay">
         <div class="title-sm">Filter the survivors</div>
         <div class="pill-row" id="filterPills">
           <button class="pill active" data-filter="all" type="button">All Survivors</button>
@@ -256,40 +289,8 @@
           <button class="pill" data-filter="aaa" type="button">AAA / Mid-size</button>
           <button class="pill active" data-ghosts="on" type="button" id="ghostToggle">Ghost Layer On</button>
         </div>
-        <div class="hint" id="sceneHint">
-          Filled bubbles are premium games. Hollow bubbles are free-to-play. Hue still separates Indie and AAA / Mid-size, while deeper tones indicate higher concurrent engagement.
-        </div>
       </div>
-
-      <div class="summary-card">
-        <div class="title-sm">What survival looks like</div>
-        <div class="stat-grid">
-          <div class="stat">
-            <div class="stat-label">Survivors shown</div>
-            <div class="stat-value" id="stat1Value"></div>
-          </div>
-          <div class="stat">
-            <div class="stat-label">Free survivors</div>
-            <div class="stat-value" id="stat2Value"></div>
-          </div>
-          <div class="stat">
-            <div class="stat-label">Elite corner</div>
-            <div class="stat-value" id="stat3Value"></div>
-          </div>
-        </div>
-        <div class="summary-copy" id="summaryCopy"></div>
-      </div>
-    </div>
-
-    <div class="legend">
-      <div class="legend-item"><span class="swatch" style="background:#d9dde3"></span><span>Ghost background: games that never reached this survivor tier</span></div>
-      <div class="legend-item"><span class="swatch" style="background:#56c7bc"></span><span>Indie survivor</span></div>
-      <div class="legend-item"><span class="swatch" style="background:#d96b72"></span><span>AAA / Mid-size survivor</span></div>
-      <div class="legend-item"><span class="swatch ring"></span><span>Free-to-play survivor</span></div>
-    </div>
-
-    <div id="vizWrap">
-      <canvas id="chart" width="1040" height="680"></canvas>
+      <canvas id="chart"></canvas>
     </div>
   </div>
 
@@ -303,17 +304,30 @@
     const canvas = document.getElementById("chart");
     const ctx = canvas.getContext("2d");
     const tooltip = document.getElementById("tooltip");
+    const filterPills = document.getElementById("filterPills");
     const summaryCopy = document.getElementById("summaryCopy");
     const stat1Value = document.getElementById("stat1Value");
     const stat2Value = document.getElementById("stat2Value");
     const stat3Value = document.getElementById("stat3Value");
-    const sceneHint = document.getElementById("sceneHint");
-    const filterPills = document.getElementById("filterPills");
     const ghostToggle = document.getElementById("ghostToggle");
 
-    const W = canvas.width;
-    const H = canvas.height;
-    const margin = { top: 38, right: 40, bottom: 72, left: 76 };
+    const wrap = document.getElementById("vizWrap");
+    const wrapRect = wrap.getBoundingClientRect();
+    const wrapWidth = wrapRect.width > 0 ? wrapRect.width : 1220;
+    const CSS_W = Math.max(960, Math.min(1100, wrapWidth - 120));
+    const CSS_H = 760;
+    
+    // Scale for true display size vs physical pixels layout.
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = CSS_W * dpr;
+    canvas.height = CSS_H * dpr;
+    canvas.style.width = `${CSS_W}px`;
+    canvas.style.height = `${CSS_H}px`;
+    ctx.scale(dpr, dpr);
+
+    const W = CSS_W;
+    const H = CSS_H;
+    const margin = { top: 56, right: 40, bottom: 72, left: 76 };
     const plotW = W - margin.left - margin.right;
     const plotH = H - margin.top - margin.bottom;
 
@@ -398,8 +412,8 @@
       ctx.fillRect(margin.left, margin.top, dangerX - margin.left, plotH);
 
       ctx.fillStyle = "#9d1c24";
-      ctx.font = "700 12px Segoe UI";
-      ctx.fillText("Danger Zone", margin.left + 12, margin.top + 22);
+      ctx.font = "700 15px Segoe UI";
+      ctx.fillText("Danger Zone", margin.left + 14, margin.top + 24);
 
       const eliteX = xScale(90);
       const eliteY = yScale(50000);
@@ -410,9 +424,20 @@
       ctx.strokeRect(eliteX, eliteY, W - margin.right - eliteX, H - margin.bottom - eliteY);
       ctx.restore();
 
+      ctx.save();
+      ctx.font = "900 18px Segoe UI";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      const textX = eliteX + (W - margin.right - eliteX) / 2;
+      const textY = eliteY + (H - margin.bottom - eliteY) / 2;
+
+      ctx.lineWidth = 4;
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.75)";
+      ctx.strokeText("The 1% Elite", textX, textY);
+      
       ctx.fillStyle = "#8c6a0f";
-      ctx.font = "700 12px Segoe UI";
-      ctx.fillText("The 1% Elite", eliteX + 12, eliteY + 22);
+      ctx.fillText("The 1% Elite", textX, textY);
+      ctx.restore();
     }
 
     function drawAxes() {
@@ -429,7 +454,7 @@
         ctx.stroke();
 
         ctx.fillStyle = "#5f6c7b";
-        ctx.font = "12px Segoe UI";
+        ctx.font = "15px Segoe UI";
         ctx.textAlign = "center";
         ctx.fillText(`${v}%`, x, H - margin.bottom + 26);
       });
@@ -443,10 +468,10 @@
         ctx.stroke();
 
         ctx.fillStyle = "#5f6c7b";
-        ctx.font = "12px Segoe UI";
+        ctx.font = "15px Segoe UI";
         ctx.textAlign = "right";
         const label = v >= 1000 ? `${(v / 1000).toFixed(v >= 100000 ? 0 : 1).replace('.0','')}k` : String(v);
-        ctx.fillText(label, margin.left - 10, y + 4);
+        ctx.fillText(label, margin.left - 10, y + 5);
       });
 
       ctx.strokeStyle = "rgba(15, 23, 42, 0.14)";
@@ -457,27 +482,52 @@
       ctx.stroke();
 
       ctx.fillStyle = "#102a43";
-      ctx.font = "700 18px Georgia";
+      ctx.font = "700 24px Georgia";
       ctx.textAlign = "left";
-      ctx.fillText("Who made it out of the flood?", margin.left, 24);
+      ctx.fillText("Who made it out of the flood?", margin.left, 20);
       ctx.fillStyle = "#5f6c7b";
-      ctx.font = "12px Segoe UI";
-      ctx.fillText("Gray dots are the failed majority. Survivors rise above them only when quality and visibility arrive together.", margin.left, 42);
+      ctx.font = "14px Segoe UI";
+      ctx.fillText("Gray dots are the failed majority. Survivors rise above them only when quality and visibility arrive together.", margin.left, 40);
 
       ctx.save();
       ctx.translate(20, margin.top + plotH / 2);
       ctx.rotate(-Math.PI / 2);
       ctx.fillStyle = "#5f6c7b";
-      ctx.font = "12px Segoe UI";
+      ctx.font = "15px Segoe UI";
       ctx.textAlign = "center";
-      ctx.fillText("Total reviews (log scale)", 0, 0);
+      ctx.fillText("Total reviews (log scale)", 0, -5);
       ctx.restore();
 
       ctx.fillStyle = "#5f6c7b";
-      ctx.font = "12px Segoe UI";
+      ctx.font = "15px Segoe UI";
       ctx.textAlign = "center";
-      ctx.fillText("Positive review percentage", margin.left + plotW / 2, H - 20);
+      ctx.fillText("Positive review percentage", margin.left + plotW / 2, H - 10);
       ctx.restore();
+    }
+
+    function updateSummary(data) {
+      if (!stat1Value) return;
+      const elite = data.filter(d => d.positive_pct >= 90 && d.total_reviews >= 50000);
+      const free = data.filter(d => (d.Price || 0) === 0);
+      const premium = data.filter(d => (d.Price || 0) > 0);
+
+      stat1Value.textContent = `${data.length} / ${survivors.length}`;
+      stat2Value.textContent = `${free.length} free`;
+      stat3Value.textContent = `${elite.length} elite`;
+
+      if (state.hovered) {
+        const d = state.hovered;
+        summaryCopy.textContent =
+          `${d.Name} sits at ${d.positive_pct.toFixed(1)}% positive with ${d.total_reviews.toLocaleString("en-US")} reviews. ` +
+          `${(d.Price || 0) === 0 ? "It is free-to-play," : "It is a paid release,"} and its engagement proxy reaches a Peak CCU of ${(d["Peak CCU"] || 0).toLocaleString("en-US")}.`;
+        return;
+      }
+
+      const indieCount = data.filter(d => d.dev_type === "Indie").length;
+      const aaaCount = data.filter(d => d.dev_type !== "Indie").length;
+      summaryCopy.textContent =
+        `This filter shows ${indieCount} Indie survivors and ${aaaCount} AAA / Mid-size survivors. ${premium.length} are paid games, ` +
+        `while only ${free.length} survivors are free-to-play. The elite corner contains the tiny group that cleared both quality and large-scale attention.`;
     }
 
     function drawGhosts(ghostData) {
@@ -527,7 +577,7 @@
 
         if (hovered) {
           ctx.fillStyle = "#102a43";
-          ctx.font = "700 11px Segoe UI";
+          ctx.font = "700 13px Segoe UI";
           ctx.textAlign = "left";
           ctx.fillText(d.Name, x + r + 8, y - r - 4);
         }
@@ -538,42 +588,13 @@
       return hitboxes;
     }
 
-    function updateSummary(data) {
-      const elite = data.filter(d => d.positive_pct >= 90 && d.total_reviews >= 50000);
-      const free = data.filter(d => (d.Price || 0) === 0);
-      const premium = data.filter(d => (d.Price || 0) > 0);
-
-      stat1Value.textContent = `${data.length} / ${meta.survivor_count}`;
-      stat2Value.textContent = `${free.length} free`;
-      stat3Value.textContent = `${elite.length} elite`;
-
-      if (state.hovered) {
-        const d = state.hovered;
-        summaryCopy.textContent =
-          `${d.Name} sits at ${d.positive_pct.toFixed(1)}% positive with ${d.total_reviews.toLocaleString("en-US")} reviews. ` +
-          `${(d.Price || 0) === 0 ? "It is free-to-play," : "It is a paid release,"} and its engagement proxy reaches a Peak CCU of ${(d["Peak CCU"] || 0).toLocaleString("en-US")}.`;
-        sceneHint.textContent =
-          `Current hover: ${d.dev_type} / ${d.primary_genre}. The bubble size represents estimated owner base, and the darkness reflects Peak CCU because playtime fields are flat in this cleaned dataset.`;
-        return;
-      }
-
-      const indieCount = data.filter(d => d.dev_type === "Indie").length;
-      const aaaCount = data.filter(d => d.dev_type !== "Indie").length;
-      summaryCopy.textContent =
-        `This filter shows ${indieCount} Indie survivors and ${aaaCount} AAA / Mid-size survivors. ${premium.length} are paid games, ` +
-        `while only ${free.length} survivors are free-to-play. The elite corner contains the tiny group that cleared both quality and large-scale attention.`;
-
-      sceneHint.textContent =
-        "Filled bubbles are premium games. Hollow bubbles are free-to-play. Hue still separates Indie and AAA / Mid-size, while deeper tones indicate higher concurrent engagement.";
-    }
-
     function draw() {
       ctx.clearRect(0, 0, W, H);
       drawZones();
       drawAxes();
       drawGhosts(filteredGhosts());
       state.hitboxes = drawSurvivors(filteredSurvivors());
-      updateSummary(filteredSurvivors());
+      updateSummary(state.hitboxes);
     }
 
     function showTooltip(d, evt) {
@@ -589,8 +610,12 @@
         Peak CCU: ${(d["Peak CCU"] || 0).toLocaleString("en-US")}
       `;
       tooltip.classList.add("show");
-      tooltip.style.left = `${evt.clientX + 16}px`;
-      tooltip.style.top = `${evt.clientY + 16}px`;
+      const tipW = tooltip.offsetWidth || 320;
+      const tipH = tooltip.offsetHeight || 160;
+      const left = Math.min(evt.clientX + 16, window.innerWidth - tipW - 16);
+      const top = Math.min(evt.clientY + 16, window.innerHeight - tipH - 16);
+      tooltip.style.left = `${Math.max(16, left)}px`;
+      tooltip.style.top = `${Math.max(16, top)}px`;
     }
 
     function hideTooltip() {
@@ -599,10 +624,8 @@
 
     canvas.addEventListener("mousemove", evt => {
       const rect = canvas.getBoundingClientRect();
-      const scaleX = canvas.width / rect.width;
-      const scaleY = canvas.height / rect.height;
-      const x = (evt.clientX - rect.left) * scaleX;
-      const y = (evt.clientY - rect.top) * scaleY;
+      const x = evt.clientX - rect.left;
+      const y = evt.clientY - rect.top;
 
       const hit = (state.hitboxes || []).findLast(d => Math.hypot(d.x - x, d.y - y) <= d.r + 4);
       if (hit) {

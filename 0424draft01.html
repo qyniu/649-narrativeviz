@@ -1,0 +1,1765 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>The Indie Game Gold Rush</title>
+  <style>
+    :root {
+      --bg: #f7f4ee; --ink: #1f2933; --muted: #52606d;
+      --line: rgba(31,41,51,0.12); --teal: #2a9d8f;
+      --gold: #d8a94b; --coral: #ce6c5a; --navy: #102a43;
+      --harbor: #5b7da8; --th: 52px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { font-family: Georgia,"Times New Roman",serif; color: var(--ink);
+      background: var(--bg); line-height: 1.75; overflow-x: hidden; }
+
+    /* ── TOPBAR ── */
+    #topbar { position: fixed; top: 0; left: 0; right: 0; height: var(--th);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 20px; background: rgba(247,244,238,0.9);
+      backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); z-index: 100; }
+    #topbar-title { font: 700 0.75rem/1 "Segoe UI",sans-serif;
+      letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+    #progress-wrap { flex: 0 0 240px; height: 3px; border-radius: 3px;
+      background: rgba(31,41,51,0.1); overflow: hidden; }
+    #progress-bar { height: 100%; width: 0%;
+      background: linear-gradient(90deg,var(--gold),var(--coral));
+      border-radius: 3px; transition: width 80ms linear; }
+    #chapter-label { font: 600 0.7rem/1 "Segoe UI",sans-serif;
+      color: var(--muted); letter-spacing: 0.06em; text-align: right;
+      min-width: 160px; transition: opacity 300ms; }
+
+    /* ── NAV DOTS ── */
+    #nav-dots { position: fixed; right: 16px; top: 50%; transform: translateY(-50%);
+      display: flex; flex-direction: column; gap: 10px; z-index: 90; }
+    .nav-dot { width: 8px; height: 8px; border-radius: 50%;
+      background: rgba(31,41,51,0.18); cursor: pointer;
+      transition: all 250ms ease; position: relative; }
+    .nav-dot.active { background: var(--gold); transform: scale(1.4); }
+    .nav-dot:hover::after { content: attr(data-label);
+      position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+      background: var(--navy); color: #fff;
+      font: 700 0.68rem/1 "Segoe UI",sans-serif;
+      padding: 4px 8px; border-radius: 6px; white-space: nowrap; pointer-events: none; }
+
+    /* ── HERO ── */
+    #hero { position: relative; height: 100vh; background: #0f0c08;
+      display: flex; align-items: center; justify-content: center; overflow: hidden; }
+    #hero-canvas { position: absolute; inset: 0; }
+    #hero-content { position: relative; z-index: 2; text-align: center;
+      color: #fff7eb; width: min(820px, 90vw); }
+    .hero-kicker { font: 700 0.78rem/1 "Segoe UI",sans-serif;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      color: rgba(255,247,235,0.45); margin-bottom: 32px; }
+    .hero-line { display: block; font-size: clamp(1.6rem,3.5vw,3rem);
+      font-weight: 400; line-height: 1.25; min-height: 1.3em;
+      opacity: 0; transition: opacity 400ms ease; }
+    .hero-line.vis { opacity: 1; }
+    .cursor { display: inline-block; width: 2px; height: 0.9em;
+      background: var(--gold); margin-left: 3px; vertical-align: text-bottom;
+      animation: blink 1s step-end infinite; }
+    @keyframes blink { 50% { opacity: 0; } }
+    #hero-line2 { margin-top: 12px; }
+    #hero-counter-wrap { display: inline-block; margin: 22px 0 8px; }
+    #hero-counter { font-size: clamp(3.5rem,8vw,7rem); font-weight: 700;
+      color: var(--gold); line-height: 1; display: block; opacity: 0;
+      transition: opacity 400ms ease; }
+    #hero-counter-sub { font: 400 0.9rem/1.4 "Segoe UI",sans-serif;
+      color: rgba(255,247,235,0.5); letter-spacing: 0.06em;
+      display: block; margin-top: 6px; opacity: 0; transition: opacity 400ms ease; }
+    #hero-silence { display: block; font-size: clamp(1.8rem,4vw,3.4rem);
+      font-weight: 700; color: var(--coral); margin-top: 20px;
+      opacity: 0; transition: opacity 500ms ease; }
+    #hero-scroll-cue { position: absolute; bottom: 28px; left: 50%;
+      transform: translateX(-50%);
+      font: 700 0.7rem/1 "Segoe UI",sans-serif;
+      letter-spacing: 0.16em; text-transform: uppercase;
+      color: rgba(255,247,235,0.35);
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+      opacity: 0; transition: opacity 600ms ease;
+      animation: floatCue 2.2s ease-in-out infinite 0.6s; }
+    .scroll-arrow { width: 16px; height: 16px;
+      border-right: 2px solid rgba(255,247,235,0.3);
+      border-bottom: 2px solid rgba(255,247,235,0.3);
+      transform: rotate(45deg); }
+    @keyframes floatCue { 0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(6px)} }
+
+    /* ── FULLSCREEN TRANSITIONS ── */
+    .fs-trans { width: 100%; min-height: 72vh;
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; padding: 64px 32px; text-align: center; }
+    .fs-dark { background: #0c1620; color: #d8eaf5; }
+    .fs-scissors { background: #13101e; color: #e0d8f5; }
+    .fs-hope { background: #091910; color: #c8eddb; }
+    .fs-trans h2 { font-size: clamp(1.5rem,2.8vw,2.4rem); line-height: 1.3;
+      max-width: 680px; margin-bottom: 20px; }
+    .fs-trans p { font: 400 1rem/1.65 "Segoe UI",sans-serif;
+      color: rgba(255,255,255,0.5); max-width: 520px; }
+    .stat-pair { display: flex; gap: 56px; align-items: center;
+      justify-content: center; margin: 28px 0 16px; }
+    .stat-item { text-align: center; }
+    .stat-big { display: block; font-size: clamp(3rem,6vw,5.5rem); font-weight: 700;
+      line-height: 1; opacity: 0; transform: translateY(18px);
+      transition: opacity 0.7s ease, transform 0.7s ease; }
+    .stat-big.supply { color: var(--coral); }
+    .stat-big.reviews { color: #6ad5c8; }
+    .stat-pair.vis .stat-big { opacity: 1; transform: translateY(0); }
+    .stat-pair.vis .stat-item:nth-child(3) .stat-big { transition-delay: 250ms; }
+    .stat-small { display: block; font: 700 0.78rem/1 "Segoe UI",sans-serif;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: rgba(255,255,255,0.38); margin-top: 8px; }
+    .stat-vs { font-size: 1.2rem; color: rgba(255,255,255,0.22);
+      font-family: "Segoe UI",sans-serif; }
+
+    /* Scissors */
+    .scissors-wrap { margin: 28px auto 20px; width: 220px; height: 80px;
+      position: relative; }
+    .scissor-blade { position: absolute; width: 100%; height: 3px;
+      background: rgba(255,255,255,0.45); border-radius: 2px;
+      left: 0; top: 50%; transform-origin: 20% 50%;
+      transition: transform 1.4s cubic-bezier(.4,0,.2,1); }
+    .blade-top { transform: translateY(-18px) rotate(-22deg); }
+    .blade-bot { transform: translateY(14px) rotate(22deg); }
+    .scissors-wrap.vis .blade-top { transform: translateY(-2px) rotate(-3deg); }
+    .scissors-wrap.vis .blade-bot { transform: translateY(-2px) rotate(3deg); }
+    .blade-label { position: absolute; font: 700 0.72rem/1 "Segoe UI",sans-serif;
+      letter-spacing: 0.08em; color: rgba(255,255,255,0.4); white-space: nowrap; }
+    .blade-label.top { top: 0; left: 0; }
+    .blade-label.bot { bottom: 0; left: 0; }
+
+    /* Hope bubbles */
+    .hope-bubbles { display: flex; gap: 16px; justify-content: center; margin: 24px 0; }
+    .hope-bub { padding: 9px 18px; border-radius: 999px;
+      font: 700 0.82rem/1 "Segoe UI",sans-serif; letter-spacing: 0.06em; }
+    .hope-bub.rpg { background: rgba(91,125,168,0.25); color: #9dc4e8;
+      border: 1px solid rgba(91,125,168,0.4); animation: hbob 3s ease-in-out infinite; }
+    .hope-bub.strat { background: rgba(42,157,143,0.25); color: #6dddd0;
+      border: 1px solid rgba(42,157,143,0.4); animation: hbob 3s ease-in-out infinite 0.4s; }
+    .hope-bub.sim { background: rgba(216,169,75,0.25); color: #f0cf8a;
+      border: 1px solid rgba(216,169,75,0.4); animation: hbob 3s ease-in-out infinite 0.9s; }
+    @keyframes hbob { 0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)} }
+
+    /* ── CONTENT WRAPPER ── */
+    .content-wrap { width: min(760px,calc(100vw - 40px)); margin: 0 auto; }
+    .content-wrap-wide { width: min(1220px,calc(100vw - 40px)); margin: 0 auto; }
+    .section-pad { padding: 56px 0; }
+    .section-pad-sm { padding: 32px 0; }
+
+    /* ── FADE-IN ── */
+    .fi { opacity: 0; transform: translateY(20px);
+      transition: opacity 0.55s ease, transform 0.55s ease; }
+    .fi.vis { opacity: 1; transform: translateY(0); }
+    .fi:nth-child(2) { transition-delay: 90ms; }
+    .fi:nth-child(3) { transition-delay: 180ms; }
+    .fi:nth-child(4) { transition-delay: 270ms; }
+    .fi:nth-child(5) { transition-delay: 360ms; }
+
+    /* ── PROSE ── */
+    .prose h2 { font-size: clamp(1.55rem,2.6vw,2.2rem); line-height: 1.2;
+      color: var(--navy); margin-bottom: 6px; }
+    .prose h3 { font-size: 0.98rem; font-style: italic; font-weight: 400;
+      color: var(--muted); margin-bottom: 18px; }
+    .prose p { font-size: 1.04rem; color: var(--ink); margin-bottom: 1.05rem; }
+    .prose blockquote { padding: 6px 0 6px 18px; border-left: 4px solid var(--teal);
+      color: #334e68; font-style: italic; font-size: 1.04rem; margin: 22px 0; }
+    hr.div { border: none; border-top: 1px solid var(--line); margin: 48px 0; }
+
+    /* ── INLINE HIGHLIGHT ── */
+    .hl { color: var(--coral); font-weight: 700; cursor: help;
+      border-bottom: 2px dotted rgba(206,108,90,0.5); position: relative; }
+    .hl-tip { display: none; position: absolute; bottom: calc(100% + 8px); left: 50%;
+      transform: translateX(-50%); background: var(--navy); color: #dce8f0;
+      font: 400 0.8rem/1.5 "Segoe UI",sans-serif;
+      padding: 8px 12px; border-radius: 10px; z-index: 200;
+      pointer-events: none; width: max-content; max-width: 240px; white-space: normal;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
+    .hl-tip::after { content: ""; position: absolute; top: 100%; left: 50%;
+      transform: translateX(-50%); border: 5px solid transparent;
+      border-top-color: var(--navy); }
+    .hl:hover .hl-tip { display: block; }
+    .hl.gold { color: var(--gold); border-bottom-color: rgba(216,169,75,0.5); }
+    .hl.teal { color: var(--teal); border-bottom-color: rgba(42,157,143,0.5); }
+
+    /* ── SCROLLYTELLING ── */
+    .scrolly { position: relative; display: grid;
+      grid-template-columns: 1fr 400px; gap: 0;
+      max-width: 1300px; margin: 0 auto; padding: 0 24px; }
+    .scrolly.r { grid-template-columns: 400px 1fr; }
+    .scrolly-sticky { position: sticky; top: var(--th); align-self: start;
+      height: calc(100vh - var(--th) - 24px); margin-top: 12px;
+      border-radius: 20px; background: #f0ece4;
+      border: 1px solid var(--line); overflow: hidden; }
+    .scrolly.r .scrolly-sticky { order: 2; }
+    .scrolly.r .scrolly-steps { order: 1; padding-left: 0; padding-right: 48px; }
+    .scrolly-steps { padding: 8vh 0 60vh 48px; }
+    .step-card { padding: 22px 20px; border-radius: 16px;
+      border: 1px solid var(--line); background: rgba(255,253,248,0.92);
+      margin-bottom: 80vh; opacity: 0.28; transform: translateY(8px);
+      transition: opacity 300ms ease, transform 300ms ease, box-shadow 300ms ease; }
+    .step-card:last-child { margin-bottom: 8vh; }
+    .step-card.active { opacity: 1; transform: translateY(0);
+      box-shadow: 0 10px 32px rgba(31,41,51,0.1); }
+    .step-label { font: 700 0.68rem/1 "Segoe UI",sans-serif;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--muted); margin-bottom: 8px; }
+    .step-card h3 { font-size: clamp(1rem,1.6vw,1.35rem); line-height: 1.2;
+      color: var(--navy); margin-bottom: 8px; font-style: normal; }
+    .step-card p { font-size: 0.93rem; color: var(--muted); line-height: 1.6; }
+    .step-card mark { background: rgba(216,169,75,0.2); color: #60431a;
+      padding: 0.05em 0.18em; border-radius: 0.2em; }
+    .sticky-canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+    .ann { position: absolute; max-width: 180px; padding: 9px 11px;
+      border-radius: 11px; background: rgba(255,253,248,0.94);
+      border: 1px solid var(--line); font: 0.78rem/1.45 "Segoe UI",sans-serif;
+      color: var(--ink); box-shadow: 0 6px 18px rgba(31,41,51,0.09);
+      opacity: 0; transform: translateY(6px);
+      transition: opacity 350ms ease, transform 350ms ease; pointer-events: none; }
+    .ann.vis { opacity: 1; transform: translateY(0); }
+    .ann strong { display: block; font-size: 0.7rem; letter-spacing: 0.08em;
+      text-transform: uppercase; color: var(--coral); margin-bottom: 3px; }
+
+    .scene6-panel {
+      position: absolute; left: 16px; right: 16px; bottom: 16px;
+      display: flex; justify-content: space-between; align-items: flex-end; gap: 12px;
+      pointer-events: none;
+    }
+    .scene6-card {
+      width: min(250px, 42%);
+      padding: 14px 16px; border-radius: 14px;
+      border: 1px solid var(--line); background: rgba(255,253,248,0.94);
+      box-shadow: 0 8px 22px rgba(31,41,51,0.08);
+      pointer-events: auto;
+    }
+    .scene6-card h4 {
+      font: 700 0.74rem/1 "Segoe UI",sans-serif; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--muted); margin-bottom: 8px;
+    }
+    .scene6-card p {
+      font: 400 0.84rem/1.55 "Segoe UI",sans-serif; color: var(--ink);
+    }
+    .scene6-pills { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+    .scene6-pill {
+      padding: 7px 12px; border-radius: 999px; cursor: pointer;
+      border: 1px solid var(--line); background: transparent;
+      font: 700 0.76rem/1 "Segoe UI",sans-serif; color: var(--muted);
+      transition: all 220ms ease;
+    }
+    .scene6-pill.active, .scene6-pill:hover {
+      background: rgba(216,169,75,0.16); color: #6a4b18; border-color: rgba(216,169,75,0.4);
+    }
+
+    /* ── IFRAME SECTION ── */
+    .iframe-section { padding: 32px 0 48px; }
+    .iframe-label { font: 700 0.68rem/1 "Segoe UI",sans-serif;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--muted); margin-bottom: 10px;
+      display: flex; align-items: center; gap: 10px; }
+    .iframe-label::before { content: ""; display: block;
+      width: 20px; height: 2px; background: var(--muted); }
+    .viz-wrap { border-radius: 16px; border: 1px solid var(--line);
+      background: #fff; overflow: hidden; }
+    .viz-wrap iframe { width: 100%; border: 0; display: block; background: #fff; }
+
+    /* ── HIT RATE BAR (Scene 3) ── */
+    .hit-bar-section { margin: 28px 0 8px; padding: 22px 24px;
+      background: rgba(255,253,248,0.92); border: 1px solid var(--line);
+      border-radius: 14px; }
+    .hit-bar-title { font: 700 0.72rem/1 "Segoe UI",sans-serif;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--muted); margin-bottom: 16px; }
+    .hb-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+    .hb-year { font: 700 0.82rem/1 "Segoe UI",sans-serif;
+      color: var(--navy); width: 34px; flex-shrink: 0; }
+    .hb-track { flex: 1; height: 26px; background: rgba(31,41,51,0.06);
+      border-radius: 5px; overflow: hidden; }
+    .hb-fill { height: 100%; border-radius: 5px; width: 0%;
+      transition: width 1.3s cubic-bezier(.4,0,.2,1); }
+    .hb-fill.y2013 { background: var(--teal); }
+    .hb-fill.y2024 { background: var(--coral); }
+    .hb-pct { font: 700 0.82rem/1 "Segoe UI",sans-serif; color: var(--navy);
+      width: 40px; flex-shrink: 0; }
+
+    /* ── BEFORE/AFTER (Scene 5) ── */
+    .ba-section { margin: 24px 0; padding: 20px 22px;
+      background: rgba(255,253,248,0.92); border: 1px solid var(--line);
+      border-radius: 14px; }
+    .ba-title { font: 700 0.72rem/1 "Segoe UI",sans-serif;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--muted); margin-bottom: 14px; }
+    .ba-toggle { display: flex; gap: 8px; margin-bottom: 18px; }
+    .ba-btn { padding: 7px 18px; border-radius: 999px;
+      border: 1px solid var(--line); background: transparent; cursor: pointer;
+      font: 700 0.78rem/1 "Segoe UI",sans-serif; color: var(--muted);
+      transition: all 220ms ease; }
+    .ba-btn.active { background: var(--navy); color: #fff; border-color: var(--navy); }
+    .ba-bars { display: flex; flex-direction: column; gap: 8px; }
+    .ba-row { display: flex; align-items: center; gap: 12px; }
+    .ba-row-label { font: 700 0.76rem/1 "Segoe UI",sans-serif;
+      width: 72px; flex-shrink: 0; }
+    .label-ghost { color: var(--muted); }
+    .label-modest { color: var(--harbor); }
+    .label-hit { color: var(--teal); }
+    .ba-track { flex: 1; height: 30px; background: rgba(31,41,51,0.05);
+      border-radius: 5px; overflow: hidden; }
+    .ba-fill-bar { height: 100%; border-radius: 5px;
+      transition: width 900ms cubic-bezier(.4,0,.2,1);
+      display: flex; align-items: center; padding: 0 10px;
+      font: 700 0.76rem/1 "Segoe UI",sans-serif; color: rgba(255,255,255,0.9); }
+    .ba-fill-bar.ghost { background: rgba(169,181,193,0.6); color: var(--ink); }
+    .ba-fill-bar.modest { background: var(--harbor); }
+    .ba-fill-bar.hit { background: var(--teal); }
+
+    /* ── SURVIVOR CALCULATOR ── */
+    .calc-section { margin: 28px 0 16px; padding: 26px 28px;
+      background: rgba(255,253,248,0.95); border: 1px solid var(--line);
+      border-radius: 18px; box-shadow: 0 10px 32px rgba(31,41,51,0.07); }
+    .calc-section h3 { font-size: 1.1rem; color: var(--navy);
+      margin-bottom: 18px; font-style: normal; }
+    .calc-grid { display: grid; grid-template-columns: 1fr 1fr;
+      gap: 14px; margin-bottom: 18px; }
+    .calc-field label { display: block; font: 700 0.68rem/1 "Segoe UI",sans-serif;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--muted); margin-bottom: 5px; }
+    .calc-field select { width: 100%; padding: 9px 10px;
+      border: 1px solid rgba(31,41,51,0.14); border-radius: 9px;
+      background: rgba(255,255,255,0.8);
+      font: 600 0.9rem/1 "Segoe UI",sans-serif; color: var(--ink);
+      cursor: pointer; appearance: none; }
+    .calc-result { padding: 18px 20px; background: var(--navy);
+      border-radius: 12px; color: #e0eaf5; }
+    .calc-odds { font-size: clamp(2rem,3.5vw,2.8rem); font-weight: 700;
+      color: var(--gold); line-height: 1; display: block; margin-bottom: 4px; }
+    .calc-odds-label { font: 400 0.78rem/1 "Segoe UI",sans-serif;
+      color: rgba(224,234,245,0.55); letter-spacing: 0.06em; }
+    .calc-tip { margin-top: 12px; font: 400 0.88rem/1.55 "Segoe UI",sans-serif;
+      color: rgba(224,234,245,0.78); }
+
+    .feature-split {
+      display: grid;
+      grid-template-columns: 360px minmax(0, 1fr);
+      gap: 26px;
+      align-items: start;
+    }
+    .feature-side {
+      position: sticky;
+      top: calc(var(--th) + 16px);
+    }
+    .feature-main .iframe-section {
+      padding-top: 0;
+    }
+
+    .scene7-filter-bar {
+      display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+      margin: 10px 0 16px;
+    }
+    .scene7-filter-btn {
+      padding: 8px 14px; border-radius: 999px;
+      border: 1px solid var(--line); background: rgba(255,253,248,0.92);
+      cursor: pointer; font: 700 0.78rem/1 "Segoe UI",sans-serif; color: var(--muted);
+      transition: all 220ms ease;
+    }
+    .scene7-filter-btn.active, .scene7-filter-btn:hover {
+      background: var(--navy); border-color: var(--navy); color: #fff;
+    }
+    .scene7-filter-copy {
+      font: 400 0.88rem/1.55 "Segoe UI",sans-serif; color: var(--muted);
+      margin-bottom: 14px;
+    }
+
+    /* ── CLOSING ── */
+    .closing-bg { background: #ece7de; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 960px) {
+      .scrolly { grid-template-columns: 1fr; padding: 0 16px; }
+      .scrolly.r { grid-template-columns: 1fr; }
+      .scrolly-sticky { position: relative; height: 55vh; top: 0;
+        order: 1 !important; margin: 0 0 0; border-radius: 16px; }
+      .scrolly-steps { order: 2 !important; padding: 24px 8px 40vh !important; }
+      .step-card { margin-bottom: 35vh; }
+      .feature-split { grid-template-columns: 1fr; }
+      .feature-side { position: static; }
+    }
+    @media (max-width: 600px) {
+      #nav-dots { display: none; }
+      .stat-pair { gap: 24px; }
+      .calc-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══ TOPBAR ══ -->
+<div id="topbar">
+  <div id="topbar-title">The Indie Game Gold Rush</div>
+  <div id="progress-wrap"><div id="progress-bar"></div></div>
+  <div id="chapter-label">Intro</div>
+</div>
+
+<!-- ══ NAV DOTS ══ -->
+<nav id="nav-dots">
+  <div class="nav-dot active" data-target="sec-intro"  data-label="Intro"></div>
+  <div class="nav-dot" data-target="sec-scene1" data-label="The Flood"></div>
+  <div class="nav-dot" data-target="sec-scene2" data-label="Attention Gap"></div>
+  <div class="nav-dot" data-target="sec-scene3" data-label="Declining Odds"></div>
+  <div class="nav-dot" data-target="sec-scene4" data-label="Winner Takes All"></div>
+  <div class="nav-dot" data-target="sec-scene5" data-label="Middle Class"></div>
+  <div class="nav-dot" data-target="sec-scene6" data-label="Genre Resilience"></div>
+  <div class="nav-dot" data-target="sec-closing" data-label="Survivor Profile"></div>
+</nav>
+
+<!-- ══ HERO ══ -->
+<section id="hero">
+  <canvas id="hero-canvas"></canvas>
+  <div id="hero-content">
+    <div class="hero-kicker">For Every Developer About To Ship</div>
+    <span class="hero-line" id="hero-line1"></span>
+    <span class="hero-line" id="hero-line2"></span>
+    <div id="hero-counter-wrap">
+      <span id="hero-counter"></span>
+      <span id="hero-counter-sub">new games released on Steam in 2024</span>
+    </div>
+    <span id="hero-silence"></span>
+  </div>
+  <div id="hero-scroll-cue">
+    <span>Scroll to find out why</span>
+    <div class="scroll-arrow"></div>
+  </div>
+</section>
+
+<!-- ══ INTRO ══ -->
+<div id="sec-intro" data-chapter="Intro">
+  <div class="content-wrap section-pad">
+    <div class="prose">
+      <p class="fi">In the indie dev community, we often speak of a &#8220;Golden Age.&#8221; It was a time when Steam was a curated storefront&#8212;a digital stage where, if your game was good, the spotlight would eventually find you. Developers dreamt of a sustainable cycle: pour your heart into a project, find an audience, and use those earnings to fund the next dream.</p>
+      <p class="fi">But the data from 2024 reveals a haunting new reality. This year, over <span class="hl">12,000 new titles<span class="hl-tip">The total number of games released on Steam in 2024, roughly 27 times the 2013 level.</span></span> flooded onto Steam, yet a staggering <span class="hl">89% of them<span class="hl-tip">About 10,900 games launched with no reviews, no visibility, and almost no measurable audience response.</span></span> launched into total silence&#8212;not a single player review to mark their arrival.</p>
+      <p class="fi">This isn&#8217;t just a story about failure; it&#8217;s a story about the physics of attention. When supply grows <span class="hl gold">30-fold<span class="hl-tip">A massive expansion in supply collided with almost-flat growth in player attention: a structural mismatch, not a temporary slump.</span></span> while player hours remain finite, the rules of the game change. Before you commit years of your life to development, we need to look at how this &#8220;Gold Rush&#8221; restructured the world of indie games, and what it truly means to be seen in an era of infinite noise.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SCENE 1 SCROLLYTELLING ══ -->
+<div id="sec-scene1" data-chapter="The Flood">
+  <div class="scrolly" id="scrolly1">
+    <div class="scrolly-sticky" id="sticky1">
+      <canvas class="sticky-canvas" id="canvas1"></canvas>
+      <div class="ann" id="ann-gl" style="left:32%;top:22%">
+        <strong>2012 · Greenlight</strong>Community voting replaced the curated catalog. The first crack in the gate.
+      </div>
+      <div class="ann" id="ann-sd" style="left:55%;top:12%">
+        <strong>2017 · Steam Direct</strong>A flat $100 fee replaced voting. Anyone could publish.
+      </div>
+      <div class="ann" id="ann-you" style="left:8%;top:48%">
+        <strong>Your Game</strong>One bright tile in a widening torrent.
+      </div>
+    </div>
+    <div class="scrolly-steps">
+      <article class="step-card active" data-scene="scene1" data-step="0">
+        <div class="step-label">Cold Open</div>
+        <h3>At first, the storefront still feels readable.</h3>
+        <p>Your game is just one tile in a marketplace that still looks finite. Before 2012, Steam carefully curated what shipped. Discovery still felt plausible.</p>
+      </article>
+      <article class="step-card" data-scene="scene1" data-step="1">
+        <div class="step-label">Policy Shift</div>
+        <h3>Then the catalog opens.</h3>
+        <p>In <mark>2012</mark>, Steam Greenlight replaced curation with community voting&#8212;the first real crack in the wall. In <mark>2017</mark>, Steam Direct replaced voting with a flat $100 fee. Anyone could publish.</p>
+      </article>
+      <article class="step-card" data-scene="scene1" data-step="2">
+        <div class="step-label">Wall of Releases</div>
+        <h3>By Direct, the curve is no longer a trend. It is pressure.</h3>
+        <p>Indie releases grew from ~400/year in 2013 to <mark>10,000+/year by 2024</mark>&#8212;a 25× increase. Your single tile is buried under an avalanche.</p>
+      </article>
+    </div>
+  </div>
+  <div class="content-wrap">
+    <div class="iframe-section">
+      <div class="iframe-label">Explore the full interactive chart</div>
+      <div class="viz-wrap"><iframe src="scene1_flood.html" title="Scene 1: The Flood" loading="lazy" style="height:760px"></iframe></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TRANSITION 1: 27× vs 4× ══ -->
+<div class="fs-trans fs-dark" data-chapter="The Attention Gap">
+  <h2 class="fi">Supply grew 27 times. Attention grew 4 times.</h2>
+  <div class="stat-pair" id="stat-pair-1">
+    <div class="stat-item">
+      <span class="stat-big supply">27×</span>
+      <span class="stat-small">Game Supply Growth</span>
+    </div>
+    <span class="stat-vs">vs</span>
+    <div class="stat-item">
+      <span class="stat-big reviews">4×</span>
+      <span class="stat-small">Review Demand Growth</span>
+    </div>
+  </div>
+  <p class="fi">That&#8217;s a 7-to-1 ratio. For every unit of player attention gained, seven new games entered the competition for it.</p>
+</div>
+
+<!-- ══ SCENE 2 SCROLLYTELLING ══ -->
+<div id="sec-scene2" data-chapter="The Attention Gap">
+  <div class="content-wrap section-pad">
+    <div class="prose">
+      <p class="fi">If the Flood in Scene 1 represents the collective ambition of developers, Scene 2 reveals the cost of that ambition.</p>
+      <p class="fi">We are facing a mathematical wall: a player&#8217;s day only has 24 hours. As the number of releases exploded, the <span class="hl teal">&#8220;average slice&#8221;<span class="hl-tip">A typical new game could expect hundreds of reviews in 2013; by 2024 that expectation had fallen to roughly three.</span></span> of attention available for any single game didn&#8217;t just shrink&#8212;it effectively vanished.</p>
+      <p class="fi">As you scroll through the chart below, notice the gravity of the data. The stage that once felt wide enough for everyone is being crushed into a narrow sliver. For a modern developer, the challenge is no longer just &#8220;making a great game&#8221;&#8212;it is surviving the descent into the <span class="hl">Silent 89%<span class="hl-tip">About 89% of games receive no reviews at all, making them effectively invisible to Steam's recommendation systems.</span></span>.</p>
+    </div>
+  </div>
+  <div class="scrolly r" id="scrolly2">
+    <div class="scrolly-sticky" id="sticky2">
+      <canvas class="sticky-canvas" id="canvas2"></canvas>
+      <div class="ann" id="ann-gap" style="right:12%;top:38%">
+        <strong>The Attention Deficit</strong>The shaded region grows every year — representing attention that never reached a game.
+      </div>
+      <div class="ann" id="ann-pergame" style="left:18%;bottom:16%">
+        <strong>Per-game average</strong>2013: ~hundreds of reviews → 2024: ~3 reviews
+      </div>
+    </div>
+    <div class="scrolly-steps">
+      <article class="step-card active" data-scene="scene2" data-step="0">
+        <div class="step-label">Supply Climbs</div>
+        <h3>Game supply rockets skyward.</h3>
+        <p>From 2013 to 2024, games on Steam grew 27×. The supply line indexes at 2700 by the end&#8212;nearly vertical in the final years.</p>
+      </article>
+      <article class="step-card" data-scene="scene2" data-step="1">
+        <div class="step-label">Attention Barely Moves</div>
+        <h3>Player attention is nearly flat.</h3>
+        <p>Reviews&#8212;a proxy for engagement&#8212;only grew 4×. The two lines diverge into a yawning gap. Players simply don&#8217;t have more hours.</p>
+      </article>
+      <article class="step-card" data-scene="scene2" data-step="2">
+        <div class="step-label">The Deficit</div>
+        <h3>The gap between them is the crisis.</h3>
+        <p>The shaded region is structural attention deficit&#8212;demand that never existed for thousands of games. By 2024, a new release could expect just <mark>3 reviews on average</mark>.</p>
+      </article>
+    </div>
+  </div>
+  <div class="content-wrap">
+    <div class="iframe-section">
+      <div class="iframe-label">Explore the full interactive chart</div>
+      <div class="viz-wrap"><iframe id="scene2Frame" src="scene2_attention_gap.html" title="The Attention Gap" loading="lazy" style="height:1080px"></iframe></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TRANSITION 2: SCISSORS ══ -->
+<div class="fs-trans fs-scissors" data-chapter="Declining Odds">
+  <h2 class="fi">The Scissors Effect</h2>
+  <div class="scissors-wrap" id="scissors-wrap">
+    <div class="scissor-blade blade-top">
+      <span class="blade-label top">Supply × 27 ↑</span>
+    </div>
+    <div class="scissor-blade blade-bot">
+      <span class="blade-label bot">Hit Rate ÷ 22 ↓</span>
+    </div>
+  </div>
+  <p class="fi">The same decade that multiplied competition 27× divided your odds of success by 22. What was once 1-in-12 became 1-in-263.</p>
+</div>
+
+<!-- ══ SCENE 3 ══ -->
+<div id="sec-scene3" data-chapter="Declining Odds">
+  <div class="content-wrap section-pad">
+    <div class="prose">
+      <p class="fi">When the sea of supply rises but the shores of attention remain fixed, the pressure falls entirely on the individual creator. The &#8220;attention gap&#8221; we saw in Scene 2 is not an abstract economic theory; it is a brutal filter applied to every game launched.</p>
+      <p class="fi">The visualizations below unpack the <span class="hl">&#8220;Scissors Effect&#8221;<span class="hl-tip">Competition multiplied while hit rates collapsed, like the two blades of a pair of scissors closing in on each other.</span></span>&#8212;where soaring competition and flat engagement intersect to sever the odds of success. In a single decade, the likelihood of a game reaching <span class="hl teal">1,000 reviews<span class="hl-tip">Used here as a practical breakout threshold: enough visibility to establish reputation and plausibly fund a follow-up game.</span></span> plummeted by an astonishing factor of <span class="hl">twenty-two<span class="hl-tip">Hit rate fell from 8.35% in 2013 to just 0.38% in 2024.</span></span>.</p>
+    </div>
+    <div class="hit-bar-section" id="hit-bar-section">
+      <div class="hit-bar-title">Hit Rate: Games Reaching ≥1,000 Reviews</div>
+      <div class="hb-row">
+        <span class="hb-year">2013</span>
+        <div class="hb-track"><div class="hb-fill y2013" id="hb2013" style="width:0%"></div></div>
+        <span class="hb-pct">8.35%</span>
+      </div>
+      <div class="hb-row">
+        <span class="hb-year">2024</span>
+        <div class="hb-track"><div class="hb-fill y2024" id="hb2024" style="width:0%"></div></div>
+        <span class="hb-pct">0.38%</span>
+      </div>
+    </div>
+  </div>
+  <div class="content-wrap-wide">
+    <div class="iframe-section">
+      <div class="iframe-label">Explore the full interactive chart</div>
+      <div class="viz-wrap"><iframe id="scene3Frame" src="scene3_survivor_simulator.html" title="Declining Odds Simulator" loading="lazy" style="height:920px"></iframe></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SCENE 4 SCROLLYTELLING ══ -->
+<div id="sec-scene4" data-chapter="Winner Takes All">
+  <div class="content-wrap section-pad">
+    <div class="prose">
+      <p class="fi">If overall attention is stagnant and the middle class is dissolving, a crucial question emerges: where did all the players go?</p>
+      <p class="fi">The answer lies in the physics of digital visibility. Attention generates more attention. The Steam algorithm, Twitch streamers, and word-of-mouth networks all compound the success of games that are already succeeding. The <span class="hl teal">Lorenz curve<span class="hl-tip">An economics tool for showing inequality. Perfect equality would follow the diagonal; a deeper bow means more concentrated attention.</span></span> below illustrates a terrifying reality: the market has collapsed into a singularity.</p>
+      <p class="fi">We are witnessing the death of equitable discovery. Each passing year displays a deeper bow in the curve&#8212;a stark visual metaphor for how a microscopic fraction of elite titles now devour nearly all the oxygen in the room, leaving thousands of games gasping in their wake. The <span class="hl">Gini coefficient<span class="hl-tip">Gini ranges from 0 for perfect equality to 1 for extreme inequality. Steam review concentration is around 0.93, far beyond most familiar income-inequality benchmarks.</span></span> tells the story in a single number.</p>
+    </div>
+  </div>
+  <div class="scrolly" id="scrolly4">
+    <div class="scrolly-sticky" id="sticky4">
+      <canvas class="sticky-canvas" id="canvas4"></canvas>
+      <div class="ann" id="ann-lorenz-eq" style="right:14%;top:16%">
+        <strong>Perfect Equality</strong>Every game gets an equal share of reviews &#8212; a fantasy diagonal.
+      </div>
+      <div class="ann" id="ann-lorenz-2013" style="left:16%;bottom:26%">
+        <strong>2013 — Gini: 0.71</strong>Already unequal, but the top 10% captured ~50% of reviews.
+      </div>
+      <div class="ann" id="ann-lorenz-2024" style="left:14%;bottom:12%">
+        <strong>2024 — Gini: 0.93</strong>Top 1% now captures the majority. The floor dropped out.
+      </div>
+    </div>
+    <div class="scrolly-steps">
+      <article class="step-card active" data-scene="scene4" data-step="0">
+        <div class="step-label">The Baseline</div>
+        <h3>What perfect equality would look like.</h3>
+        <p>If every game received equal attention, the Lorenz curve would follow the diagonal&#8212;a straight line from corner to corner. Reality bent far below it, even in 2013.</p>
+      </article>
+      <article class="step-card" data-scene="scene4" data-step="1">
+        <div class="step-label">2013–2016</div>
+        <h3>Already concentrated &#8212; and deepening.</h3>
+        <p>Even at the start of the data, the market was far from equal. The curve bows noticeably below the diagonal. By 2016, it&#8217;s deeper still.</p>
+      </article>
+      <article class="step-card" data-scene="scene4" data-step="2">
+        <div class="step-label">2019–2024</div>
+        <h3>By 2024, the bow approaches the axis.</h3>
+        <p>The 2024 curve nearly hugs the bottom-left corner, then rockets up at the right edge. A tiny number of games have <mark>absorbed almost all available attention</mark>.</p>
+      </article>
+    </div>
+  </div>
+  <div class="content-wrap-wide">
+    <div class="iframe-section">
+      <div class="iframe-label">Explore the full interactive chart</div>
+      <div class="viz-wrap"><iframe id="scene4Frame" src="scene4_winner_takes_all.html" title="Winner Takes All" loading="lazy" style="height:780px"></iframe></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SCENE 5 ══ -->
+<div id="sec-scene5" data-chapter="Disappearing Middle">
+  <div class="content-wrap section-pad">
+    <div class="prose">
+      <p class="fi">In a healthy ecosystem, there is a ladder. You start small, find a modest audience, and climb toward success. For years, the &#8220;Middle Class&#8221; of Steam&#8212;games earning between <span class="hl teal">100–999 reviews<span class="hl-tip">This tier once represented a livable outcome for small studios: enough traction to stay afloat and make another game.</span></span>&#8212;was the bedrock of the indie scene. It provided enough moderate success to keep small studios alive and creative.</p>
+      <p class="fi">But look closely at the shifting proportions. That blue band of moderate success is thinning out, becoming brittle and rare.</p>
+      <p class="fi">The market is polarizing into a Winner-Takes-All landscape. Today, attention flows almost exclusively to the top 1% of elite hits, while the &#8220;middle ground&#8221; that once sheltered indie teams is being hollowed out. For a creator, this means the safety net of &#8220;just being okay&#8221; is gone. You must now navigate a market that demands either total mastery or offers total invisibility.</p>
+    </div>
+    <div class="ba-section fi" id="ba-section">
+      <div class="ba-title">Steam Review Distribution by Tier</div>
+      <div class="ba-toggle">
+        <button class="ba-btn active" id="ba-btn-2013">2013</button>
+        <button class="ba-btn" id="ba-btn-2024">2024</button>
+      </div>
+      <div class="ba-bars">
+        <div class="ba-row">
+          <span class="ba-row-label label-ghost">Ghost (0)</span>
+          <div class="ba-track"><div class="ba-fill-bar ghost" id="ba-ghost" style="width:83.3%">83.3%</div></div>
+        </div>
+        <div class="ba-row">
+          <span class="ba-row-label label-modest">Modest (100–999)</span>
+          <div class="ba-track"><div class="ba-fill-bar modest" id="ba-modest" style="width:7%">7.0%</div></div>
+        </div>
+        <div class="ba-row">
+          <span class="ba-row-label label-hit">Hit (1,000+)</span>
+          <div class="ba-track"><div class="ba-fill-bar hit" id="ba-hit" style="width:8.35%">8.35%</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="content-wrap-wide">
+    <div class="iframe-section">
+      <div class="iframe-label">Explore the full interactive chart</div>
+      <div class="viz-wrap"><iframe src="scene5_disappearing_middle.html" title="Scene 5" loading="lazy" style="height:900px"></iframe></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TRANSITION 3: HOPE ══ -->
+<div class="fs-trans fs-hope" data-chapter="Genre Resilience">
+  <h2 class="fi">The flood doesn&#8217;t drown everyone.</h2>
+  <div class="hope-bubbles">
+    <div class="hope-bub rpg">RPG</div>
+    <div class="hope-bub strat">Strategy</div>
+    <div class="hope-bub sim">Simulation</div>
+  </div>
+  <p class="fi">Some genres built arks. Despite the flood, certain categories maintained hit rates 3&#8211;5× higher than the platform average. The question is: which ones &#8212; and why?</p>
+</div>
+
+<!-- ══ SCENE 6 ══ -->
+<div id="sec-scene6" data-chapter="Genre Resilience">
+  <div class="content-wrap section-pad">
+    <div class="prose">
+      <p class="fi">Is the indie dream dead, then? Not necessarily. But the strategy for survival has changed. Steam is not one giant, monolithic market; it is a collection of distinct <span class="hl teal">&#8220;ecological niches&#8221;<span class="hl-tip">Each genre comes with its own audience loyalty, discovery dynamics, and review behavior. Some niches are structurally more survivable than others.</span></span>, each with its own rules and its own degree of loyalty.</p>
+      <p class="fi">In this section, we shift from the chaos of the crowd to the logic of <strong>Genre Resilience.</strong> You will notice that certain genres&#8212;like <span class="hl teal">RPGs and Strategy<span class="hl-tip">These genres post hit rates roughly 3 to 5 times the platform average in the underlying analysis.</span></span>&#8212;have held their ground far better than others. Despite the flood, these genres maintain a higher Hit Rate, acting like islands with deeper foundations in a rising sea.</p>
+      <p class="fi">As you explore the Genre Survival Map, ask yourself: Where does your passion meet the data? Understanding which genres still offer a statistical &#8220;fighting chance&#8221; is perhaps the most vital piece of equipment you can carry into the modern market.</p>
+    </div>
+  </div>
+  <div class="scrolly r" id="scrolly6">
+    <div class="scrolly-sticky" id="sticky6">
+      <canvas class="sticky-canvas" id="canvas6"></canvas>
+      <div class="ann" id="ann-rpg" style="left:58%;top:18%">
+        <strong>RPG Harbor</strong>Deep systems and loyal communities keep this path more stable than the platform average.
+      </div>
+      <div class="ann" id="ann-strategy" style="left:35%;top:24%">
+        <strong>Strategy Harbor</strong>Replayability and mastery help Strategy resist the flood better than most genres.
+      </div>
+      <div class="ann" id="ann-paths" style="right:12%;bottom:28%">
+        <strong>2013 to 2024</strong>Each trail shows how a genre moved through crowding and quality pressure over time.
+      </div>
+      <div class="scene6-panel">
+        <div class="scene6-card">
+          <h4>Harbor Note</h4>
+          <p id="scene6-copy">RPG and Strategy remain the clearest shelters. Their audiences reward depth, patience, and replay value.</p>
+        </div>
+        <div class="scene6-card">
+          <h4>Choose A Harbor</h4>
+          <div class="scene6-pills">
+            <button class="scene6-pill active" data-genre="rpg" type="button">RPG</button>
+            <button class="scene6-pill" data-genre="strategy" type="button">Strategy</button>
+            <button class="scene6-pill" data-genre="simulation" type="button">Simulation</button>
+            <button class="scene6-pill" data-genre="action" type="button">Action</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="scrolly-steps">
+      <article class="step-card active" data-scene="scene6" data-step="0">
+        <div class="step-label">Not All Genres Face The Same Flood</div>
+        <h3>Steam is a collection of niches, not one giant market.</h3>
+        <p>Some genres face brutal crowding and weak retention. Others have loyal audiences that can still discover and sustain a game over time.</p>
+      </article>
+      <article class="step-card" data-scene="scene6" data-step="1">
+        <div class="step-label">Trace The Paths</div>
+        <h3>What matters is not just where a genre is. It is how it traveled there.</h3>
+        <p>Watch each genre move from 2013 to 2024. Some drift rightward into overcrowding while others hold their quality ground.</p>
+      </article>
+      <article class="step-card" data-scene="scene6" data-step="2">
+        <div class="step-label">The Harbors</div>
+        <h3>RPG and Strategy held their ground best.</h3>
+        <p>These categories kept higher hit rates because they reward depth, mastery, and return visits rather than pure launch-day spectacle.</p>
+      </article>
+      <article class="step-card" data-scene="scene6" data-step="3">
+        <div class="step-label">Choose Your Harbor</div>
+        <h3>Click a genre pill and ask whether your passion meets the data.</h3>
+        <p>This is the turn from diagnosis to strategy: not where the flood is loudest, but where survival still looks statistically possible.</p>
+      </article>
+    </div>
+  </div>
+  <div class="content-wrap">
+    <div class="iframe-section">
+      <div class="iframe-label">Explore the Genre Survival Map</div>
+      <div class="viz-wrap"><iframe src="scene6_genre_resilience.html" title="Scene 6" loading="lazy" style="height:980px"></iframe></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ CLOSING ══ -->
+<div id="sec-closing" class="closing-bg" data-chapter="Survivor Profile">
+  <div class="content-wrap section-pad">
+    <div class="prose">
+      <p class="fi">After confronting the grim realities of the attention gap, collapsing odds, and crushing inequality, we must ask: who actually makes it out alive?</p>
+      <p class="fi">The final canvas reveals the survivors&#8212;those rare artifacts that successfully navigated the flood. What you see is not a random distribution of luck. The survivors congregate tightly in the extreme upper-right, a <span class="hl gold">razor-thin corridor<span class="hl-tip">High review sentiment plus large-scale visibility form the only clearly survivable band. Fall below it and a game is almost indistinguishable from the invisible majority.</span></span> where uncompromising quality meets massive scale. Down below lies the gray expanse of the silent majority.</p>
+      <p class="fi">For an indie developer today, a great game is merely the price of admission. Escaping the gravitational pull of the invisible bottom demands both fierce craftsmanship and undeniable market resonance. The flood is permanent, but as these survivors prove, those who learn to build arks can still ride the wave.</p>
+      <blockquote class="fi"><em>Steam promised anyone could publish a game &#8212; and that is true. What it never promised was that anyone would play it. The flood keeps rising. The ceiling on success has barely moved.</em></blockquote>
+    </div>
+
+    <div class="calc-section fi">
+      <h3>Your Survival Odds Calculator</h3>
+      <div class="calc-grid">
+        <div class="calc-field">
+          <label for="calc-genre">Genre</label>
+          <select id="calc-genre">
+            <option value="rpg">RPG</option>
+            <option value="strategy">Strategy</option>
+            <option value="simulation">Simulation</option>
+            <option value="action">Action</option>
+            <option value="adventure">Adventure</option>
+            <option value="casual">Casual</option>
+          </select>
+        </div>
+        <div class="calc-field">
+          <label for="calc-price">Price Model</label>
+          <select id="calc-price">
+            <option value="paid">Premium (paid)</option>
+            <option value="free">Free-to-play</option>
+          </select>
+        </div>
+        <div class="calc-field">
+          <label for="calc-scope">Scope</label>
+          <select id="calc-scope">
+            <option value="focused">Focused niche</option>
+            <option value="broad">Broad appeal</option>
+          </select>
+        </div>
+        <div class="calc-field">
+          <label for="calc-type">Studio Size</label>
+          <select id="calc-type">
+            <option value="indie">Indie (1–5 dev)</option>
+            <option value="mid">Mid-size / AA</option>
+          </select>
+        </div>
+      </div>
+      <div class="calc-result">
+        <span class="calc-odds" id="calc-odds">~0.6%</span>
+        <span class="calc-odds-label">estimated hit rate (≥1,000 reviews) in 2024</span>
+        <div class="calc-tip" id="calc-tip">A focused, premium indie RPG still carries the best odds on Steam. Depth, community, and word-of-mouth can still work in your favor.</div>
+      </div>
+    </div>
+  </div>
+  <div class="content-wrap-wide">
+    <div class="iframe-section">
+      <div class="iframe-label">The Survivor Scatter — explore the data</div>
+      <div class="scene7-filter-bar">
+        <button class="scene7-filter-btn active" data-scene7-filter="all" type="button">All Survivors</button>
+        <button class="scene7-filter-btn" data-scene7-filter="indie" type="button">Indie Only</button>
+        <button class="scene7-filter-btn" data-scene7-filter="aaa" type="button">AAA Only</button>
+        <button class="scene7-filter-btn active" data-scene7-ghost="on" type="button">Ghost Layer On</button>
+      </div>
+      <div class="scene7-filter-copy" id="scene7-filter-copy">Use these filters to isolate survivor groups without leaving the narrative flow.</div>
+      <div class="viz-wrap"><iframe id="scene7Frame" src="scene7_survivor_portrait.html" title="Scene 7" loading="lazy" style="height:1180px"></iframe></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════
+// UTILITIES
+// ══════════════════════════════════════════════════
+const DPR = Math.min(window.devicePixelRatio || 1, 2);
+
+function ease(t) { return t < 0.5 ? 2*t*t : -1+(4-2*t)*t; }
+function clamp(v,a,b) { return Math.max(a,Math.min(b,v)); }
+function lerp(a,b,t) { return a+(b-a)*t; }
+
+function animCount(el, from, to, ms, fmt, cb) {
+  const start = performance.now();
+  function tick(now) {
+    const t = clamp((now-start)/ms,0,1);
+    const v = from + (to-from) * ease(t);
+    el.textContent = fmt(v);
+    if (t < 1) requestAnimationFrame(tick);
+    else { el.textContent = fmt(to); if(cb) cb(); }
+  }
+  requestAnimationFrame(tick);
+}
+
+function resizeCanvas(canvas) {
+  const r = canvas.getBoundingClientRect();
+  canvas.width = r.width * DPR;
+  canvas.height = r.height * DPR;
+  const ctx = canvas.getContext('2d');
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  return {w: r.width, h: r.height, ctx};
+}
+
+// ══════════════════════════════════════════════════
+// HERO
+// ══════════════════════════════════════════════════
+const heroCanvas = document.getElementById('hero-canvas');
+const hCtx = heroCanvas.getContext('2d');
+let heroParticles = [];
+
+function initHeroCanvas() {
+  heroCanvas.width = window.innerWidth * DPR;
+  heroCanvas.height = window.innerHeight * DPR;
+  hCtx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  const W = window.innerWidth, H = window.innerHeight;
+  const N = Math.min(900, Math.floor(W * H / 2800));
+  heroParticles = Array.from({length: N}, (_, i) => {
+    const silent = i / N > 0.11;
+    return {
+      x: Math.random() * W, y: Math.random() * H,
+      vx: (Math.random()-0.5)*0.35, vy: (Math.random()-0.5)*0.35,
+      r: Math.random() * 1.6 + 0.3,
+      silent,
+      alpha: 0,
+      target: silent ? 0.13 : 0.75,
+      color: silent ? [169,181,193] : [216,169,75]
+    };
+  });
+}
+
+function heroLoop() {
+  const W = window.innerWidth, H = window.innerHeight;
+  hCtx.fillStyle = 'rgba(15,12,8,0.22)';
+  hCtx.fillRect(0, 0, W, H);
+  heroParticles.forEach(p => {
+    p.x = (p.x + p.vx + W) % W;
+    p.y = (p.y + p.vy + H) % H;
+    p.alpha += (p.target - p.alpha) * 0.04;
+    const [r,g,b] = p.color;
+    hCtx.beginPath();
+    hCtx.fillStyle = `rgba(${r},${g},${b},${p.alpha})`;
+    hCtx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+    hCtx.fill();
+  });
+  requestAnimationFrame(heroLoop);
+}
+
+function typeInto(el, str, speed, cb) {
+  let i = 0; el.textContent = '';
+  el.classList.add('vis');
+  function tick() {
+    if (i < str.length) {
+      el.textContent = str.slice(0, ++i);
+      const c = el.querySelector('.cursor');
+      if (c) el.appendChild(c);
+      setTimeout(tick, speed + (Math.random()-0.5)*speed*0.4);
+    } else { if (cb) cb(); }
+  }
+  tick();
+}
+
+function runHero() {
+  const line1 = document.getElementById('hero-line1');
+  const line2 = document.getElementById('hero-line2');
+  const counter = document.getElementById('hero-counter');
+  const counterSub = document.getElementById('hero-counter-sub');
+  const silence = document.getElementById('hero-silence');
+  const cue = document.getElementById('hero-scroll-cue');
+
+  // Add cursor to line1
+  line1.innerHTML = '<span class="cursor"></span>';
+
+  setTimeout(() => {
+    typeInto(line1, 'You made a game. You shipped it on Steam.', 38, () => {
+      // Remove cursor from line1
+      const c = line1.querySelector('.cursor');
+      if (c) c.remove();
+      setTimeout(() => {
+        line2.innerHTML = '<span class="cursor"></span>';
+        typeInto(line2, 'In 2024, you were one of', 44, () => {
+          const c2 = line2.querySelector('.cursor');
+          if (c2) c2.remove();
+          counter.style.opacity = '1';
+          counterSub.style.opacity = '1';
+          counter.classList.add('vis');
+          animCount(counter, 1, 12473, 1600, v => Math.round(v).toLocaleString() + '+', () => {
+            setTimeout(() => {
+              // Extinguish 89%
+              heroParticles.forEach(p => { if (p.silent) p.target = 0.03; });
+              setTimeout(() => {
+                silence.classList.add('vis');
+                silence.style.opacity = '1';
+                typeInto(silence, '89% launched into total silence.', 30, () => {
+                  setTimeout(() => {
+                    cue.style.opacity = '1';
+                  }, 1200);
+                });
+              }, 1000);
+            }, 500);
+          });
+        });
+      }, 600);
+    });
+  }, 900);
+}
+
+// ══════════════════════════════════════════════════
+// PROGRESS BAR + NAV DOTS
+// ══════════════════════════════════════════════════
+const progressBar = document.getElementById('progress-bar');
+const chapterLabel = document.getElementById('chapter-label');
+const navDots = [...document.querySelectorAll('.nav-dot')];
+const sections = [...document.querySelectorAll('[data-chapter]')];
+
+navDots.forEach(dot => {
+  dot.addEventListener('click', () => {
+    const t = document.getElementById(dot.dataset.target);
+    if (t) t.scrollIntoView({behavior: 'smooth', block: 'start'});
+  });
+});
+
+let currentChapter = '';
+function onScroll() {
+  const scrollable = document.documentElement.scrollHeight - window.innerHeight;
+  progressBar.style.width = scrollable > 0 ? (window.scrollY/scrollable*100)+'%' : '0%';
+
+  // Find active section
+  let active = null;
+  sections.forEach(s => {
+    const rect = s.getBoundingClientRect();
+    if (rect.top <= window.innerHeight * 0.4) active = s;
+  });
+  if (active) {
+    const ch = active.dataset.chapter;
+    if (ch !== currentChapter) {
+      currentChapter = ch;
+      chapterLabel.style.opacity = '0';
+      setTimeout(() => { chapterLabel.textContent = ch; chapterLabel.style.opacity = '1'; }, 200);
+    }
+    // Update nav dots
+    const id = active.id;
+    navDots.forEach(d => d.classList.toggle('active', d.dataset.target === id));
+  }
+}
+window.addEventListener('scroll', onScroll, {passive:true});
+
+// ══════════════════════════════════════════════════
+// FADE-IN OBSERVER
+// ══════════════════════════════════════════════════
+const fiObs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('vis'); fiObs.unobserve(e.target); } });
+}, { threshold: 0.15 });
+document.querySelectorAll('.fi').forEach(el => fiObs.observe(el));
+
+// ══════════════════════════════════════════════════
+// STEP CARD OBSERVER
+// ══════════════════════════════════════════════════
+const stepState = {}; // scene -> step index
+
+const stepObs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (!e.isIntersecting) return;
+    const card = e.target;
+    const scene = card.dataset.scene;
+    const step = parseInt(card.dataset.step);
+    // Deactivate siblings
+    document.querySelectorAll(`.step-card[data-scene="${scene}"]`).forEach(c => c.classList.remove('active'));
+    card.classList.add('active');
+    if (stepState[scene] !== step) {
+      stepState[scene] = step;
+      updateScene(scene, step);
+    }
+  });
+}, { rootMargin: '-30% 0px -30% 0px', threshold: 0.1 });
+document.querySelectorAll('.step-card').forEach(c => stepObs.observe(c));
+
+function updateScene(scene, step) {
+  if (scene === 'scene1') drawScene1(step);
+  if (scene === 'scene2') drawScene2(step);
+  if (scene === 'scene4') drawScene4(step);
+  if (scene === 'scene6') drawScene6(step);
+}
+
+// ══════════════════════════════════════════════════
+// SCENE 1 CANVAS: THE FLOOD
+// ══════════════════════════════════════════════════
+const canvas1 = document.getElementById('canvas1');
+const years1 = [2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024];
+const vals1  = [180,210,240,320,450,520,620,860,1180,1750,2600,4100,5900,7200,8600,10100,12000];
+const maxVal1 = 12000;
+
+function drawScene1(step) {
+  const {w, h, ctx} = resizeCanvas(canvas1);
+  const pad = {l:72, r:44, t:64, b:60};
+  const pw = w - pad.l - pad.r, ph = h - pad.t - pad.b;
+
+  ctx.clearRect(0, 0, w, h);
+
+  // Background tint
+  ctx.fillStyle = 'rgba(240,236,228,0.6)';
+  ctx.fillRect(pad.l, pad.t, pw, ph);
+
+  // Grid lines
+  ctx.strokeStyle = 'rgba(31,41,51,0.07)';
+  ctx.lineWidth = 1;
+  for (let v of [3000,6000,9000,12000]) {
+    const y = pad.t + ph - (v/maxVal1)*ph;
+    ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(pad.l+pw, y); ctx.stroke();
+    ctx.fillStyle = 'rgba(82,96,109,0.55)';
+    ctx.font = `500 11px Segoe UI, sans-serif`;
+    ctx.textAlign = 'right';
+    ctx.fillText(v.toLocaleString(), pad.l - 6, y + 4);
+  }
+
+  // Axes
+  ctx.strokeStyle = 'rgba(31,41,51,0.2)'; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(pad.l, pad.t); ctx.lineTo(pad.l, pad.t+ph); ctx.lineTo(pad.l+pw, pad.t+ph); ctx.stroke();
+
+  // Year labels
+  ctx.fillStyle = 'rgba(82,96,109,0.7)'; ctx.textAlign = 'center';
+  ctx.font = '500 11px Segoe UI, sans-serif';
+  years1.forEach((yr, i) => {
+    if (yr % 2 === 0) {
+      const x = pad.l + (i/(years1.length-1))*pw;
+      ctx.fillText(yr, x, pad.t + ph + 20);
+    }
+  });
+
+  // Determine how many data points to draw
+  const endIdx = step === 0 ? 5 : (step === 1 ? 10 : years1.length - 1);
+
+  // Draw particle dots (background)
+  if (step === 2) {
+    for (let i = 0; i < 300; i++) {
+      const x = pad.l + Math.random() * pw;
+      const y = pad.t + Math.random() * ph;
+      ctx.beginPath();
+      ctx.fillStyle = `rgba(169,181,193,${Math.random()*0.25+0.05})`;
+      ctx.arc(x, y, Math.random()*1.8+0.4, 0, Math.PI*2);
+      ctx.fill();
+    }
+  }
+
+  // Draw area under curve
+  ctx.beginPath();
+  ctx.moveTo(pad.l, pad.t + ph);
+  for (let i = 0; i <= endIdx; i++) {
+    const x = pad.l + (i/(years1.length-1))*pw;
+    const y = pad.t + ph - (vals1[i]/maxVal1)*ph;
+    ctx.lineTo(x, y);
+  }
+  const lastX = pad.l + (endIdx/(years1.length-1))*pw;
+  ctx.lineTo(lastX, pad.t + ph);
+  ctx.closePath();
+  ctx.fillStyle = 'rgba(216,169,75,0.12)';
+  ctx.fill();
+
+  // Draw line
+  ctx.beginPath();
+  ctx.strokeStyle = '#875d22';
+  ctx.lineWidth = 3; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+  for (let i = 0; i <= endIdx; i++) {
+    const x = pad.l + (i/(years1.length-1))*pw;
+    const y = pad.t + ph - (vals1[i]/maxVal1)*ph;
+    i === 0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+  }
+  ctx.stroke();
+
+  // Greenlight marker (step >= 1)
+  const glIdx = years1.indexOf(2012);
+  const sdIdx = years1.indexOf(2017);
+  if (step >= 1) {
+    const glX = pad.l + (glIdx/(years1.length-1))*pw;
+    ctx.save();
+    ctx.strokeStyle = 'rgba(42,157,143,0.7)';
+    ctx.setLineDash([6,5]);
+    ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(glX, pad.t); ctx.lineTo(glX, pad.t+ph); ctx.stroke();
+    ctx.restore();
+    document.getElementById('ann-gl').classList.add('vis');
+  } else {
+    document.getElementById('ann-gl').classList.remove('vis');
+    document.getElementById('ann-sd').classList.remove('vis');
+  }
+
+  if (step >= 1) {
+    const sdX = pad.l + (sdIdx/(years1.length-1))*pw;
+    ctx.save();
+    ctx.strokeStyle = 'rgba(206,108,90,0.75)';
+    ctx.setLineDash([6,5]);
+    ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(sdX, pad.t); ctx.lineTo(sdX, pad.t+ph); ctx.stroke();
+    ctx.restore();
+    document.getElementById('ann-sd').classList.add('vis');
+  }
+
+  // "Your game" dot
+  const yourIdx = 3; // 2011
+  const yourX = pad.l + (yourIdx/(years1.length-1))*pw;
+  const yourY = pad.t + ph - (vals1[yourIdx]/maxVal1)*ph;
+  const yourAlpha = step === 2 ? 0.45 : 1;
+  ctx.beginPath();
+  ctx.fillStyle = `rgba(216,169,75,${yourAlpha})`;
+  ctx.arc(yourX, yourY, 7, 0, Math.PI*2);
+  ctx.fill();
+  if (step < 2) {
+    ctx.font = '600 12px Segoe UI, sans-serif';
+    ctx.fillStyle = `rgba(31,41,51,${yourAlpha})`;
+    ctx.textAlign = 'left';
+    ctx.fillText('your game', yourX + 10, yourY + 4);
+    document.getElementById('ann-you').classList.remove('vis');
+  } else {
+    document.getElementById('ann-you').classList.add('vis');
+  }
+
+  // Y-axis label
+  ctx.save();
+  ctx.translate(16, pad.t + ph/2);
+  ctx.rotate(-Math.PI/2);
+  ctx.font = '600 11px Segoe UI, sans-serif';
+  ctx.fillStyle = 'rgba(82,96,109,0.7)';
+  ctx.textAlign = 'center';
+  ctx.fillText('Indie Games Released / Year', 0, 0);
+  ctx.restore();
+}
+
+// ══════════════════════════════════════════════════
+// SCENE 2 CANVAS: ATTENTION GAP
+// ══════════════════════════════════════════════════
+const canvas2 = document.getElementById('canvas2');
+// 2013–2024 indexed data (2013=100)
+const years2 = [2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024];
+const supply2 = [100,152,238,355,503,696,882,1073,1282,1548,1930,2700];
+const review2 = [100,116,135,158,184,208,232,256,278,304,340,400];
+
+function drawScene2(step) {
+  const {w, h, ctx} = resizeCanvas(canvas2);
+  const pad = {l:68, r:40, t:56, b:64};
+  const pw = w - pad.l - pad.r, ph = h - pad.t - pad.b;
+  const n = years2.length;
+  const maxY = 2800;
+
+  ctx.clearRect(0, 0, w, h);
+  ctx.fillStyle = 'rgba(240,236,228,0.6)';
+  ctx.fillRect(pad.l, pad.t, pw, ph);
+
+  // Grid
+  ctx.strokeStyle = 'rgba(31,41,51,0.07)'; ctx.lineWidth = 1;
+  [500,1000,1500,2000,2500].forEach(v => {
+    const y = pad.t + ph - (v/maxY)*ph;
+    ctx.beginPath(); ctx.moveTo(pad.l,y); ctx.lineTo(pad.l+pw,y); ctx.stroke();
+    ctx.fillStyle = 'rgba(82,96,109,0.5)';
+    ctx.font = '500 11px Segoe UI, sans-serif'; ctx.textAlign = 'right';
+    ctx.fillText(v+'×', pad.l-5, y+4);
+  });
+
+  // Axes
+  ctx.strokeStyle = 'rgba(31,41,51,0.18)'; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(pad.l,pad.t); ctx.lineTo(pad.l,pad.t+ph); ctx.lineTo(pad.l+pw,pad.t+ph); ctx.stroke();
+  years2.forEach((yr,i) => {
+    const x = pad.l+(i/(n-1))*pw;
+    ctx.fillStyle = 'rgba(82,96,109,0.65)'; ctx.textAlign = 'center';
+    ctx.font = '500 11px Segoe UI, sans-serif';
+    ctx.fillText(yr, x, pad.t+ph+20);
+  });
+
+  function ptX(i) { return pad.l+(i/(n-1))*pw; }
+  function ptY(v) { return pad.t+ph-(v/maxY)*ph; }
+
+  // Step 0+: supply line
+  if (step >= 0) {
+    ctx.beginPath();
+    ctx.strokeStyle = '#ce6c5a'; ctx.lineWidth = 3;
+    ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+    supply2.forEach((v,i) => i===0 ? ctx.moveTo(ptX(i),ptY(v)) : ctx.lineTo(ptX(i),ptY(v)));
+    ctx.stroke();
+    // Label
+    ctx.fillStyle = '#ce6c5a';
+    ctx.font = '700 12px Segoe UI, sans-serif'; ctx.textAlign = 'left';
+    ctx.fillText('Game Supply', ptX(n-1)+5, ptY(supply2[n-1]));
+  }
+
+  // Step 1+: review line
+  if (step >= 1) {
+    ctx.beginPath();
+    ctx.strokeStyle = '#2a9d8f'; ctx.lineWidth = 3;
+    ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+    review2.forEach((v,i) => i===0 ? ctx.moveTo(ptX(i),ptY(v)) : ctx.lineTo(ptX(i),ptY(v)));
+    ctx.stroke();
+    ctx.fillStyle = '#2a9d8f';
+    ctx.font = '700 12px Segoe UI, sans-serif'; ctx.textAlign = 'left';
+    ctx.fillText('Review Demand', ptX(n-1)+5, ptY(review2[n-1]));
+  }
+
+  // Step 2+: gap fill + annotations
+  if (step >= 2) {
+    ctx.beginPath();
+    ctx.moveTo(ptX(0), ptY(supply2[0]));
+    supply2.forEach((v,i) => ctx.lineTo(ptX(i),ptY(v)));
+    review2.slice().reverse().forEach((v,i) => ctx.lineTo(ptX(n-1-i),ptY(v)));
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(206,108,90,0.14)';
+    ctx.fill();
+    document.getElementById('ann-gap').classList.add('vis');
+    document.getElementById('ann-pergame').classList.add('vis');
+  } else {
+    document.getElementById('ann-gap').classList.remove('vis');
+    document.getElementById('ann-pergame').classList.remove('vis');
+  }
+
+  // Y label
+  ctx.save();
+  ctx.translate(16, pad.t+ph/2);
+  ctx.rotate(-Math.PI/2);
+  ctx.font = '600 11px Segoe UI, sans-serif';
+  ctx.fillStyle = 'rgba(82,96,109,0.65)'; ctx.textAlign = 'center';
+  ctx.fillText('Index (2013 = 100)', 0, 0);
+  ctx.restore();
+
+  // Baseline label
+  ctx.fillStyle = 'rgba(82,96,109,0.5)'; ctx.textAlign = 'right';
+  ctx.font = '500 11px Segoe UI, sans-serif';
+  ctx.fillText('100×', pad.l-5, ptY(100)+4);
+}
+
+// ══════════════════════════════════════════════════
+// SCENE 4 CANVAS: LORENZ CURVES
+// ══════════════════════════════════════════════════
+const canvas4 = document.getElementById('canvas4');
+const lorenzData = [
+  {year:2013, c:4,  gini:0.60, color:'rgba(169,181,193,0.85)'},
+  {year:2016, c:8,  gini:0.78, color:'rgba(210,160,80,0.85)'},
+  {year:2019, c:14, gini:0.87, color:'rgba(210,110,75,0.88)'},
+  {year:2022, c:22, gini:0.91, color:'rgba(200,70,55,0.88)'},
+  {year:2024, c:32, gini:0.94, color:'#ce3030'},
+];
+
+let lorenzGiniEl = null;
+let lorenzCountAnim = null;
+
+function drawScene4(step) {
+  const {w, h, ctx} = resizeCanvas(canvas4);
+  const pad = {l:68, r:60, t:56, b:64};
+  const pw = w - pad.l - pad.r, ph = h - pad.t - pad.b;
+  const N = 200;
+
+  ctx.clearRect(0, 0, w, h);
+  ctx.fillStyle = 'rgba(240,236,228,0.6)';
+  ctx.fillRect(pad.l, pad.t, pw, ph);
+
+  // Axes
+  ctx.strokeStyle = 'rgba(31,41,51,0.18)'; ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(pad.l, pad.t); ctx.lineTo(pad.l, pad.t+ph);
+  ctx.lineTo(pad.l+pw, pad.t+ph); ctx.stroke();
+
+  // Axis labels
+  ctx.fillStyle = 'rgba(82,96,109,0.65)'; ctx.font = '500 11px Segoe UI, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('Cumulative share of games (lowest to highest)', pad.l+pw/2, pad.t+ph+36);
+  ctx.save(); ctx.translate(18, pad.t+ph/2); ctx.rotate(-Math.PI/2);
+  ctx.fillText('Cumulative share of reviews', 0, 0); ctx.restore();
+
+  // Tick labels
+  [0,25,50,75,100].forEach(v => {
+    const x = pad.l+(v/100)*pw, y = pad.t+(1-v/100)*ph;
+    ctx.fillStyle = 'rgba(82,96,109,0.5)';
+    ctx.font = '500 10px Segoe UI, sans-serif';
+    ctx.textAlign = 'center'; ctx.fillText(v+'%', x, pad.t+ph+18);
+    ctx.textAlign = 'right'; ctx.fillText(v+'%', pad.l-5, y+4);
+  });
+
+  // Equality diagonal
+  ctx.beginPath();
+  ctx.setLineDash([8,6]); ctx.lineWidth = 1.5;
+  ctx.strokeStyle = 'rgba(82,96,109,0.4)';
+  ctx.moveTo(pad.l, pad.t+ph); ctx.lineTo(pad.l+pw, pad.t);
+  ctx.stroke(); ctx.setLineDash([]);
+
+  // Legend label for diagonal
+  ctx.fillStyle = 'rgba(82,96,109,0.5)'; ctx.textAlign = 'left';
+  ctx.font = 'italic 11px Segoe UI, sans-serif';
+  ctx.fillText('Perfect equality', pad.l+pw*0.55, pad.t+ph*0.35);
+
+  // Determine which curves to show
+  const showCount = step === 0 ? 0 : (step === 1 ? 2 : lorenzData.length);
+  document.getElementById('ann-lorenz-eq').classList.toggle('vis', step === 0);
+  document.getElementById('ann-lorenz-2013').classList.toggle('vis', step >= 1);
+  document.getElementById('ann-lorenz-2024').classList.toggle('vis', step >= 2);
+
+  function lorenzPath(c) {
+    ctx.beginPath();
+    for (let i = 0; i <= N; i++) {
+      const t = i/N;
+      const x = pad.l + t * pw;
+      const y = pad.t + ph - Math.pow(t, c) * ph;
+      i === 0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+    }
+  }
+
+  // Draw shaded area for 2024 (step 2)
+  if (step >= 2) {
+    const last = lorenzData[lorenzData.length-1];
+    ctx.beginPath();
+    ctx.moveTo(pad.l, pad.t+ph);
+    for (let i = 0; i <= N; i++) {
+      const t = i/N;
+      ctx.lineTo(pad.l+t*pw, pad.t+ph-Math.pow(t,last.c)*ph);
+    }
+    ctx.lineTo(pad.l+pw, pad.t);
+    ctx.lineTo(pad.l, pad.t+ph);
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(206,48,48,0.08)';
+    ctx.fill();
+  }
+
+  // Draw curves
+  for (let i = 0; i < showCount; i++) {
+    const d = lorenzData[i];
+    lorenzPath(d.c);
+    ctx.strokeStyle = d.color; ctx.lineWidth = i === lorenzData.length-1 ? 3 : 2;
+    ctx.lineJoin = 'round'; ctx.stroke();
+    // Year label at end of curve
+    const endY = pad.t + ph - Math.pow(0.82, d.c) * ph;
+    ctx.fillStyle = d.color; ctx.font = '700 11px Segoe UI, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText(d.year, pad.l+0.82*pw+4, endY);
+  }
+
+  // Gini display
+  if (showCount > 0) {
+    const latestGini = lorenzData[Math.min(showCount-1, lorenzData.length-1)].gini;
+    ctx.fillStyle = 'rgba(31,41,51,0.75)'; ctx.font = '700 13px Segoe UI, sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText(`Gini: ${latestGini.toFixed(2)}`, pad.l+pw, pad.t+20);
+  }
+}
+
+// ══════════════════════════════════════════════════
+// SCENE 6 CANVAS: GENRE RESILIENCE
+// ══════════════════════════════════════════════════
+const canvas6 = document.getElementById('canvas6');
+const scene6Copy = document.getElementById('scene6-copy');
+const scene6Pills = [...document.querySelectorAll('.scene6-pill')];
+let activeHarbor = 'rpg';
+
+const harborMeta = {
+  rpg: {
+    color: '#5b7da8',
+    label: 'RPG',
+    copy: 'RPG remains the clearest shelter. Loyal audiences reward depth, patience, and long-tail word of mouth.'
+  },
+  strategy: {
+    color: '#2a9d8f',
+    label: 'Strategy',
+    copy: 'Strategy survives through mastery and replay value. Players stay longer and teach each other how to play.'
+  },
+  simulation: {
+    color: '#d8a94b',
+    label: 'Simulation',
+    copy: 'Simulation can still endure when systems create clarity, retention, and creator-led discovery over time.'
+  },
+  action: {
+    color: '#ce6c5a',
+    label: 'Action',
+    copy: 'Action is the roughest water: huge competition, lower loyalty, and a brutal need to stand out immediately.'
+  }
+};
+
+scene6Pills.forEach(btn => {
+  btn.addEventListener('click', () => {
+    activeHarbor = btn.dataset.genre;
+    scene6Pills.forEach(p => p.classList.toggle('active', p === btn));
+    scene6Copy.textContent = harborMeta[activeHarbor].copy;
+    drawScene6(stepState['scene6'] || 0);
+  });
+});
+
+function drawScene6(step) {
+  if (!canvas6) return;
+  const {w, h, ctx} = resizeCanvas(canvas6);
+  const pad = {l:72, r:54, t:64, b:64};
+  const pw = w - pad.l - pad.r, ph = h - pad.t - pad.b;
+
+  ctx.clearRect(0, 0, w, h);
+  ctx.fillStyle = 'rgba(240,236,228,0.62)';
+  ctx.fillRect(pad.l, pad.t, pw, ph);
+
+  ctx.strokeStyle = 'rgba(31,41,51,0.18)';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(pad.l, pad.t);
+  ctx.lineTo(pad.l, pad.t + ph);
+  ctx.lineTo(pad.l + pw, pad.t + ph);
+  ctx.stroke();
+
+  ctx.fillStyle = 'rgba(82,96,109,0.65)';
+  ctx.font = '600 11px Segoe UI, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('Competition / crowding', pad.l + pw / 2, pad.t + ph + 30);
+  ctx.save();
+  ctx.translate(18, pad.t + ph / 2);
+  ctx.rotate(-Math.PI / 2);
+  ctx.fillText('Quality retention', 0, 0);
+  ctx.restore();
+
+  const genres = [
+    {key:'action',     start:[0.26,0.62], end:[0.79,0.48], size:28},
+    {key:'simulation', start:[0.32,0.72], end:[0.63,0.55], size:22},
+    {key:'strategy',   start:[0.22,0.52], end:[0.52,0.3],  size:26},
+    {key:'rpg',        start:[0.18,0.44], end:[0.68,0.24], size:24},
+    {key:'casual',     start:[0.28,0.58], end:[0.85,0.66], size:18, color:'rgba(169,181,193,0.9)'},
+    {key:'adventure',  start:[0.24,0.5],  end:[0.58,0.44], size:18, color:'rgba(169,181,193,0.8)'}
+  ];
+
+  const showPaths = step >= 1;
+  const showHarbors = step >= 2;
+  document.getElementById('ann-paths')?.classList.toggle('vis', showPaths);
+  document.getElementById('ann-rpg')?.classList.toggle('vis', showHarbors && activeHarbor === 'rpg');
+  document.getElementById('ann-strategy')?.classList.toggle('vis', showHarbors && activeHarbor === 'strategy');
+
+  genres.forEach(g => {
+    const sx = pad.l + g.start[0] * pw;
+    const sy = pad.t + g.start[1] * ph;
+    const ex = pad.l + g.end[0] * pw;
+    const ey = pad.t + g.end[1] * ph;
+    const meta = harborMeta[g.key];
+    const baseColor = meta ? meta.color : g.color;
+    const isActive = g.key === activeHarbor;
+    const alpha = showHarbors ? (isActive ? 0.95 : 0.28) : 0.72;
+
+    if (showPaths) {
+      ctx.beginPath();
+      ctx.strokeStyle = meta
+        ? (g.key === 'action' ? 'rgba(206,108,90,0.55)' : 'rgba(42,157,143,0.45)')
+        : 'rgba(169,181,193,0.35)';
+      ctx.lineWidth = isActive ? 3 : 2;
+      ctx.moveTo(sx, sy);
+      ctx.lineTo(ex, ey);
+      ctx.stroke();
+    }
+
+    ctx.beginPath();
+    ctx.fillStyle = baseColor.startsWith('rgba')
+      ? baseColor.replace(/0\.\d+\)/, `${alpha})`)
+      : hexToRgba(baseColor, alpha);
+    ctx.arc(ex, ey, g.size + (isActive && showHarbors ? 4 : 0), 0, Math.PI * 2);
+    ctx.fill();
+
+    if (isActive) {
+      ctx.beginPath();
+      ctx.strokeStyle = hexToRgba(meta.color, 0.28);
+      ctx.lineWidth = 10;
+      ctx.arc(ex, ey, g.size + 10, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+
+    ctx.fillStyle = 'rgba(31,41,51,0.7)';
+    ctx.font = '700 11px Segoe UI, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText(meta ? meta.label : g.key[0].toUpperCase() + g.key.slice(1), ex + g.size + 6, ey + 3);
+  });
+}
+
+function hexToRgba(hex, alpha) {
+  const clean = hex.replace('#', '');
+  const r = parseInt(clean.slice(0, 2), 16);
+  const g = parseInt(clean.slice(2, 4), 16);
+  const b = parseInt(clean.slice(4, 6), 16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
+// ══════════════════════════════════════════════════
+// FULLSCREEN TRANSITION OBSERVER
+// ══════════════════════════════════════════════════
+const fsObs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (!e.isIntersecting) return;
+    const el = e.target;
+    // Stat pair
+    const sp = el.querySelector('.stat-pair');
+    if (sp) sp.classList.add('vis');
+    // Scissors
+    const sc = el.querySelector('.scissors-wrap');
+    if (sc) sc.classList.add('vis');
+    fsObs.unobserve(el);
+  });
+}, {threshold: 0.35});
+document.querySelectorAll('.fs-trans').forEach(el => fsObs.observe(el));
+
+// ══════════════════════════════════════════════════
+// HIT RATE BAR ANIMATION
+// ══════════════════════════════════════════════════
+const hitBarObs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (!e.isIntersecting) return;
+    document.getElementById('hb2013').style.width = '83.5%'; // scaled: 8.35% of 100% → visual 83.5%
+    document.getElementById('hb2024').style.width = '3.8%';  // 0.38% → 3.8% for visibility
+    hitBarObs.unobserve(e.target);
+  });
+}, {threshold: 0.4});
+const hitSec = document.getElementById('hit-bar-section');
+if (hitSec) hitBarObs.observe(hitSec);
+
+// ══════════════════════════════════════════════════
+// BEFORE / AFTER (SCENE 5)
+// ══════════════════════════════════════════════════
+const baData = {
+  '2013': {ghost: 83.3, modest: 7.0, hit: 8.35},
+  '2024': {ghost: 89.1, modest: 1.3, hit: 0.38}
+};
+let baYear = '2013';
+
+function setBaYear(yr) {
+  baYear = yr;
+  document.getElementById('ba-btn-2013').classList.toggle('active', yr === '2013');
+  document.getElementById('ba-btn-2024').classList.toggle('active', yr === '2024');
+  const d = baData[yr];
+  const ghostEl = document.getElementById('ba-ghost');
+  const modestEl = document.getElementById('ba-modest');
+  const hitEl = document.getElementById('ba-hit');
+  ghostEl.style.width = d.ghost + '%';
+  ghostEl.textContent = d.ghost + '%';
+  // modest and hit scaled × 4 for visibility
+  const modestW = Math.max(d.modest * 4, 1);
+  const hitW = Math.max(d.hit * 4, 0.5);
+  modestEl.style.width = modestW + '%';
+  modestEl.textContent = d.modest + '%';
+  hitEl.style.width = hitW + '%';
+  hitEl.textContent = d.hit + '%';
+}
+
+document.getElementById('ba-btn-2013').addEventListener('click', () => setBaYear('2013'));
+document.getElementById('ba-btn-2024').addEventListener('click', () => setBaYear('2024'));
+
+document.querySelectorAll('.ba-row').forEach(row => {
+  row.addEventListener('mouseenter', () => {
+    if (row.querySelector('.label-modest')) document.body.style.background = '#eef2f7';
+    if (row.querySelector('.label-ghost')) document.body.style.background = '#f1eeea';
+  });
+  row.addEventListener('mouseleave', () => {
+    document.body.style.background = 'var(--bg)';
+  });
+});
+
+// Trigger initial bar animation on scroll into view
+const baObs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (!e.isIntersecting) return;
+    setBaYear('2013');
+    baObs.unobserve(e.target);
+  });
+}, {threshold: 0.3});
+const baSec = document.getElementById('ba-section');
+if (baSec) baObs.observe(baSec);
+
+// ══════════════════════════════════════════════════
+// SURVIVOR CALCULATOR
+// ══════════════════════════════════════════════════
+const calcOdds = document.getElementById('calc-odds');
+const calcTip = document.getElementById('calc-tip');
+
+const calcData = {
+  rpg:       {paid: {focused:{indie:0.62,mid:1.1},  broad:{indie:0.48,mid:0.9}},
+               free: {focused:{indie:0.22,mid:0.45}, broad:{indie:0.15,mid:0.32}}},
+  strategy:  {paid: {focused:{indie:0.55,mid:1.0},  broad:{indie:0.40,mid:0.78}},
+               free: {focused:{indie:0.18,mid:0.38}, broad:{indie:0.12,mid:0.28}}},
+  simulation:{paid: {focused:{indie:0.38,mid:0.70},  broad:{indie:0.28,mid:0.55}},
+               free: {focused:{indie:0.14,mid:0.30}, broad:{indie:0.10,mid:0.22}}},
+  action:    {paid: {focused:{indie:0.25,mid:0.55},  broad:{indie:0.18,mid:0.42}},
+               free: {focused:{indie:0.10,mid:0.24}, broad:{indie:0.07,mid:0.18}}},
+  adventure: {paid: {focused:{indie:0.22,mid:0.45},  broad:{indie:0.16,mid:0.35}},
+               free: {focused:{indie:0.09,mid:0.20}, broad:{indie:0.06,mid:0.15}}},
+  casual:    {paid: {focused:{indie:0.14,mid:0.32},  broad:{indie:0.10,mid:0.24}},
+               free: {focused:{indie:0.06,mid:0.15}, broad:{indie:0.04,mid:0.10}}},
+};
+
+const calcTips = {
+  rpg:       'RPG audiences reward depth and community. A focused premium release can still build long-tail momentum through word-of-mouth.',
+  strategy:  'Strategy players are sticky &#8212; mastery and replay value keep your game visible long after launch day.',
+  simulation:'Simulation survives through long-tail discovery. Clarity and retention matter more than launch spectacle.',
+  action:    'Action is the most crowded corridor on Steam. Differentiation and visible quality signals must be immediate.',
+  adventure: 'Adventure games compete on narrative and artistry. A strong aesthetic identity is your best discovery hook.',
+  casual:    'Casual has the highest volume and lowest hit rate. Only viral social mechanics or IP recognition break through consistently.',
+};
+
+function updateCalc() {
+  const genre = document.getElementById('calc-genre').value;
+  const price = document.getElementById('calc-price').value;
+  const scope = document.getElementById('calc-scope').value;
+  const type  = document.getElementById('calc-type').value;
+  const odds = ((calcData[genre]?.[price]?.[scope]?.[type]) || 0.15).toFixed(2);
+  calcOdds.textContent = '~' + odds + '%';
+  calcTip.innerHTML = calcTips[genre] || '';
+}
+
+const scene7FilterCopy = document.getElementById('scene7-filter-copy');
+const scene7FilterBtns = [...document.querySelectorAll('[data-scene7-filter]')];
+const scene7GhostBtn = document.querySelector('[data-scene7-ghost]');
+
+function updateScene7FilterCopy(filter, ghostsOn) {
+  if (filter === 'indie') {
+    scene7FilterCopy.textContent = ghostsOn
+      ? 'Indie survivors stay visible against the ghost field, showing how few made it through the flood.'
+      : 'Indie-only view strips the background away so the surviving corridor is easier to read.';
+  } else if (filter === 'aaa') {
+    scene7FilterCopy.textContent = ghostsOn
+      ? 'AAA and mid-size survivors cluster in the upper-right corridor, but only a small set clears the threshold.'
+      : 'AAA-only view emphasizes how concentrated even big-budget survival has become.';
+  } else {
+    scene7FilterCopy.textContent = ghostsOn
+      ? 'Use these filters to isolate survivor groups without leaving the narrative flow.'
+      : 'Ghost layer off: the survivor corridor becomes easier to inspect without the failed majority behind it.';
+  }
+}
+
+function wireScene7Filters() {
+  const s7 = document.getElementById('scene7Frame');
+  if (!s7) return;
+
+  function clickInsideFrame(selector) {
+    try {
+      const doc = s7.contentDocument || s7.contentWindow?.document;
+      const btn = doc?.querySelector(selector);
+      if (btn) btn.click();
+      return !!btn;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  scene7FilterBtns.forEach(btn => {
+    if (btn.dataset.bound === '1') return;
+    btn.dataset.bound = '1';
+    btn.addEventListener('click', () => {
+      const filter = btn.dataset.scene7Filter;
+      scene7FilterBtns.forEach(node => node.classList.toggle('active', node === btn));
+      clickInsideFrame(`#filterPills [data-filter="${filter}"]`);
+      updateScene7FilterCopy(filter, scene7GhostBtn?.classList.contains('active'));
+    });
+  });
+
+  if (scene7GhostBtn) {
+    if (scene7GhostBtn.dataset.bound === '1') return;
+    scene7GhostBtn.dataset.bound = '1';
+    scene7GhostBtn.addEventListener('click', () => {
+      const nextOn = !scene7GhostBtn.classList.contains('active');
+      scene7GhostBtn.classList.toggle('active', nextOn);
+      scene7GhostBtn.textContent = nextOn ? 'Ghost Layer On' : 'Ghost Layer Off';
+      clickInsideFrame('#ghostToggle');
+      const activeFilter = document.querySelector('[data-scene7-filter].active')?.dataset.scene7Filter || 'all';
+      updateScene7FilterCopy(activeFilter, nextOn);
+    });
+  }
+}
+
+['calc-genre','calc-price','calc-scope','calc-type'].forEach(id => {
+  document.getElementById(id).addEventListener('change', updateCalc);
+});
+updateCalc();
+
+// ══════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════
+function init() {
+  initHeroCanvas();
+  heroLoop();
+  runHero();
+
+  // Draw initial canvas states
+  setTimeout(() => {
+    drawScene1(0);
+    drawScene2(0);
+    drawScene4(0);
+    drawScene6(0);
+  }, 300);
+
+  window.addEventListener('resize', () => {
+    initHeroCanvas();
+    drawScene1(stepState['scene1'] || 0);
+    drawScene2(stepState['scene2'] || 0);
+    drawScene4(stepState['scene4'] || 0);
+    drawScene6(stepState['scene6'] || 0);
+  });
+
+  onScroll();
+  wireScene7Filters();
+
+  const sameOriginFrames = [...document.querySelectorAll('.viz-wrap iframe')];
+  function resizeIframe(iframe) {
+    try {
+      const doc = iframe.contentDocument || iframe.contentWindow?.document;
+      if (!doc) return;
+      const prev = iframe.style.height;
+      iframe.style.height = '0px';
+      const h = Math.max(doc.body?.scrollHeight || 0, doc.documentElement?.scrollHeight || 0);
+      iframe.style.height = (h > 600 ? h : 600) + 'px';
+    } catch (e) {}
+  }
+  sameOriginFrames.forEach(frame => {
+    frame.addEventListener('load', () => {
+      resizeIframe(frame);
+      if (frame.id === 'scene7Frame') wireScene7Filters();
+      setTimeout(() => resizeIframe(frame), 150);
+      setTimeout(() => resizeIframe(frame), 500);
+      setTimeout(() => resizeIframe(frame), 1000);
+    });
+    setTimeout(() => resizeIframe(frame), 0);
+  });
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>

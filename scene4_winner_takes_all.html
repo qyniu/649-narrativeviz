@@ -35,18 +35,10 @@
     }
 
     .scene {
-      max-width: 1040px;
+      max-width: 1220px;
       margin: 0 auto;
       padding: 18px 18px 12px;
       background: var(--surface);
-    }
-
-    .eyebrow {
-      font: 600 0.8rem/1.2 "Segoe UI", sans-serif;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: 10px;
     }
 
     h1 {
@@ -57,26 +49,45 @@
     }
 
     .subtitle {
-      max-width: 840px;
       color: var(--muted);
       font-size: 1rem;
       line-height: 1.6;
-      margin-bottom: 18px;
-    }
-
-    .controls {
-      display: grid;
-      grid-template-columns: 1.3fr 1fr;
-      gap: 14px;
       margin-bottom: 12px;
     }
 
-    .control-card,
-    .summary-card {
-      border: 1px solid var(--line);
-      border-radius: 16px;
-      background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(248,250,252,0.96));
-      padding: 14px;
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(300px, 0.78fr) minmax(0, 1.62fr);
+      gap: 22px;
+      align-items: start;
+    }
+
+    .side-panel {
+      position: sticky;
+      top: 12px;
+      display: grid;
+      gap: 14px;
+    }
+
+    .intro-card,
+    .controls {
+      border: 1px solid rgba(15, 23, 42, 0.08);
+      border-radius: 18px;
+      background: linear-gradient(180deg, rgba(248, 250, 252, 0.96), rgba(255, 255, 255, 0.98));
+      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.04);
+    }
+
+    .intro-card {
+      padding: 18px 18px 16px;
+    }
+
+    .right-panel {
+      min-width: 0;
+    }
+
+    .controls {
+      padding: 14px 18px 14px;
+      margin-bottom: 12px;
     }
 
     .narrative-row,
@@ -95,7 +106,7 @@
       align-items: center;
       justify-content: space-between;
       gap: 12px;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
     }
 
     .year-badge {
@@ -175,6 +186,12 @@
       font-size: 0.78rem;
       color: var(--muted);
       transition: all 180ms ease;
+      cursor: pointer;
+    }
+
+    .year-chip:hover {
+      background: #eef3f8;
+      color: var(--text);
     }
 
     .year-chip.active {
@@ -186,56 +203,15 @@
 
     .progress-meta {
       color: var(--muted);
-      font-size: 0.8rem;
-    }
-
-    .summary-card {
-      display: grid;
-      gap: 10px;
-      align-content: start;
-    }
-
-    .summary-title {
-      font: 700 0.95rem/1.3 "Segoe UI", sans-serif;
-      color: #102a43;
-    }
-
-    .stat-grid {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 10px;
-    }
-
-    .stat {
-      border-radius: 14px;
-      border: 1px solid rgba(15, 23, 42, 0.08);
-      background: rgba(255,255,255,0.72);
-      padding: 10px;
-    }
-
-    .stat-label {
-      color: var(--muted);
-      font-size: 0.76rem;
-      margin-bottom: 6px;
-    }
-
-    .stat-value {
-      font: 800 1.18rem/1.1 "Segoe UI", sans-serif;
-      color: #102a43;
-    }
-
-    .hint {
-      color: var(--muted);
-      font-size: 0.8rem;
+      font-size: 0.85rem;
     }
 
     .legend {
-      display: flex;
-      gap: 18px;
-      align-items: center;
+      display: grid;
+      gap: 10px;
       color: var(--muted);
-      font-size: 0.8rem;
-      margin-bottom: 10px;
+      font-size: 0.84rem;
+      margin-top: 16px;
     }
 
     .legend-item {
@@ -252,8 +228,8 @@
 
     #vizWrap {
       width: 100%;
-      border-top: 1px solid rgba(15, 23, 42, 0.05);
-      padding-top: 12px;
+      min-width: 0;
+      margin-top: 40px;
     }
 
     svg {
@@ -302,88 +278,73 @@
       display: block;
     }
 
-    @media (max-width: 860px) {
+    @media (max-width: 720px) {
       .scene {
         padding: 10px 10px 6px;
       }
 
-      .controls {
+      .layout {
         grid-template-columns: 1fr;
       }
 
-      .stat-grid {
-        grid-template-columns: 1fr;
+      .side-panel {
+        position: static;
       }
 
       .narrative-row {
         align-items: flex-start;
         flex-direction: column;
       }
+
+      .controls {
+        margin-bottom: 14px;
+      }
     }
   </style>
 </head>
 <body>
   <section class="scene" id="sceneRoot">
-    <div class="eyebrow">Scene 4</div>
-    <h1>Winner Takes All</h1>
-    <p class="subtitle">
-      This scene now runs like a short visual argument: the curve descends by itself, the inequality wedge deepens, particles rush into the winner zone, and the camera closes in on the final bend where almost all attention gets captured.
-    </p>
-
-    <div class="controls">
-      <div class="control-card">
-        <div class="narrative-row">
-          <div>
-            <div style="font:700 0.95rem/1.3 'Segoe UI', sans-serif; color:#102a43;">Autoplay Narrative</div>
-            <div class="progress-meta" id="phaseText">Starting from a still unequal 2013 baseline.</div>
+    <div class="layout">
+      <div class="side-panel">
+        <div class="intro-card">
+          <h1>Winner Takes All</h1>
+          <p class="subtitle">
+            This scene now runs like a short visual argument: the curve descends by itself, the inequality wedge deepens, particles rush into the winner zone, and the camera closes in on the final bend where almost all attention gets captured.
+          </p>
+          <div class="legend">
+            <div class="legend-item"><span class="swatch" style="background: var(--curve);"></span><span>Current concentration curve</span></div>
+            <div class="legend-item"><span class="swatch" style="background: var(--eq);"></span><span>Perfect equality</span></div>
+            <div class="legend-item"><span class="swatch" style="background: var(--highlight);"></span><span>Inequality wedge and winner zone</span></div>
           </div>
-          <div style="display:flex; gap:12px; align-items:center;">
-            <div class="year-badge" id="yearBadge">2013</div>
-            <button class="play-btn" id="playBtn">Replay</button>
-          </div>
-        </div>
-        <div class="progress-shell">
-          <div class="progress-fill" id="progressFill"></div>
-        </div>
-        <div class="timeline">
-          <div class="year-chip active" data-year="2013">2013</div>
-          <div class="year-chip" data-year="2016">2016</div>
-          <div class="year-chip" data-year="2019">2019</div>
-          <div class="year-chip" data-year="2022">2022</div>
-          <div class="year-chip" data-year="2024">2024</div>
-        </div>
-        <div class="progress-meta">You do not need to scrub. The scene auto-advances and pauses at key years to let the numbers breathe.</div>
-      </div>
-
-      <div class="summary-card">
-        <div class="summary-title">Concentration at a glance</div>
-        <div class="stat-grid">
-          <div class="stat">
-            <div class="stat-label">Gini coefficient</div>
-            <div class="stat-value" id="giniStat">0.984</div>
-          </div>
-          <div class="stat">
-            <div class="stat-label">Top 10% capture</div>
-            <div class="stat-value" id="top10Stat">99.4%</div>
-          </div>
-          <div class="stat">
-            <div class="stat-label">Bottom 90% capture</div>
-            <div class="stat-value" id="bottom90Stat">0.7%</div>
-          </div>
-        </div>
-        <div class="hint" id="summaryHint">
-          By 2013, the bottom 90% of games already shared less than 1% of all review attention.
         </div>
       </div>
+      <div class="right-panel">
+        <div class="controls">
+          <div class="narrative-row">
+            <div>
+              <div style="font:700 1.05rem/1.3 'Segoe UI', sans-serif; color:#102a43;">Autoplay Narrative</div>
+              <div class="progress-meta" id="phaseText" style="margin-top:2px;">Starting from a still unequal 2013 baseline.</div>
+            </div>
+            <div style="display:flex; gap:12px; align-items:center;">
+              <div class="year-badge" id="yearBadge">2013</div>
+              <button class="play-btn" id="playBtn">Replay</button>
+            </div>
+          </div>
+          <div class="progress-shell" style="height: 8px; margin-top: 8px;">
+            <div class="progress-fill" id="progressFill"></div>
+          </div>
+          <div class="timeline" style="margin-top: 10px;">
+            <div class="year-chip active" data-year="2013">2013</div>
+            <div class="year-chip" data-year="2016">2016</div>
+            <div class="year-chip" data-year="2019">2019</div>
+            <div class="year-chip" data-year="2022">2022</div>
+            <div class="year-chip" data-year="2024">2024</div>
+          </div>
+          <div class="progress-meta" style="margin-top: 8px;">You do not need to scrub. The scene auto-advances and pauses at key years to let the numbers breathe.</div>
+        </div>
+        <div id="vizWrap"></div>
+      </div>
     </div>
-
-    <div class="legend">
-      <div class="legend-item"><span class="swatch" style="background: var(--curve);"></span><span>Current concentration curve</span></div>
-      <div class="legend-item"><span class="swatch" style="background: var(--eq);"></span><span>Perfect equality</span></div>
-      <div class="legend-item"><span class="swatch" style="background: var(--highlight);"></span><span>Inequality wedge and winner zone</span></div>
-    </div>
-
-    <div id="vizWrap"></div>
   </section>
 
   <div class="tooltip" id="tooltip"></div>
@@ -414,7 +375,7 @@
       { type: "move", from: 2019, to: 2022, duration: 1800 },
       { type: "pause", year: 2022, duration: 1500, pulse: true },
       { type: "move", from: 2022, to: 2024, duration: 1400 },
-      { type: "pause", year: 2024, duration: 1800, zoom: true }
+      { type: "pause", year: 2024, duration: 1800 }
     ];
 
     const phaseText = document.getElementById("phaseText");
@@ -422,10 +383,6 @@
     const progressFill = document.getElementById("progressFill");
     const playBtn = document.getElementById("playBtn");
     const yearChips = Array.from(document.querySelectorAll(".year-chip"));
-    const giniStat = document.getElementById("giniStat");
-    const top10Stat = document.getElementById("top10Stat");
-    const bottom90Stat = document.getElementById("bottom90Stat");
-    const summaryHint = document.getElementById("summaryHint");
     const tooltip = document.getElementById("tooltip");
     const sceneRoot = document.getElementById("sceneRoot");
 
@@ -506,7 +463,7 @@
     function buildViz() {
       const wrap = document.getElementById("vizWrap");
       const width = Math.max(wrap.clientWidth || 980, 620);
-      const height = 650;
+      const height = 600;
       const margin = { top: 24, right: 34, bottom: 58, left: 70 };
       const innerWidth = width - margin.left - margin.right;
       const innerHeight = height - margin.top - margin.bottom;
@@ -524,20 +481,22 @@
       const y = d3.scaleLinear().domain([0, 100]).range([innerHeight, 0]);
 
       g.append("g")
+        .attr("id", "y-axis")
         .attr("class", "axis")
         .call(d3.axisLeft(y).ticks(5).tickSize(-innerWidth).tickFormat((d) => `${d}%`))
         .call((axis) => axis.select(".domain").remove())
         .call((axis) => axis.selectAll(".tick line").attr("stroke", "rgba(15, 23, 42, 0.08)"));
 
       g.append("g")
+        .attr("id", "x-axis")
         .attr("class", "axis")
         .attr("transform", `translate(0,${innerHeight})`)
         .call(d3.axisBottom(x).ticks(5).tickFormat((d) => `${d}%`))
         .call((axis) => axis.select(".domain").remove())
         .call((axis) => axis.selectAll(".tick line").remove());
 
-      g.append("text").attr("class", "panel-title").attr("x", 0).attr("y", -2).text("The attention curve bends away from equality");
-      g.append("text").attr("class", "panel-subtitle").attr("x", 0).attr("y", 16).text("Particles represent dispersed attention. With each year, they get pulled into the winner zone on the far right.");
+      g.append("text").attr("class", "panel-title").attr("x", 0).attr("y", -36).text("The attention curve bends away from equality");
+      g.append("text").attr("class", "panel-subtitle").attr("x", 0).attr("y", -18).text("Particles represent dispersed attention. With each year, they get pulled into the winner zone on the far right.");
 
       g.append("path")
         .attr("d", d3.line().x((d) => x(d.x)).y((d) => y(d.y))([{ x: 0, y: 0 }, { x: 100, y: 100 }]))
@@ -605,7 +564,7 @@
 
       const headline = g.append("text")
         .attr("x", innerWidth - 6)
-        .attr("y", 10)
+        .attr("y", -28)
         .attr("text-anchor", "end")
         .attr("font-family", "Segoe UI, sans-serif")
         .attr("font-size", 28)
@@ -613,7 +572,7 @@
         .attr("fill", curveColor);
       const subline = g.append("text")
         .attr("x", innerWidth - 6)
-        .attr("y", 30)
+        .attr("y", -6)
         .attr("text-anchor", "end")
         .attr("font-family", "Segoe UI, sans-serif")
         .attr("font-size", 12)
@@ -673,14 +632,6 @@
         const focusTargetPct = interp(68, 90, heat);
         const focusPoint = frame.points.reduce((best, point) => Math.abs(point.x - focusTargetPct) < Math.abs(best.x - focusTargetPct) ? point : best, frame.points[0]);
 
-        const zoomProgress = context.zoom ? context.zoomAmount : 0;
-        const scale = 1 + zoomProgress * 0.9;
-        const targetX = x(97);
-        const targetY = y(4);
-        const dx = -targetX * zoomProgress * 0.65;
-        const dy = -targetY * zoomProgress * 0.55;
-        plotContent.attr("transform", `translate(${dx},${dy}) scale(${scale})`);
-
         areaPath
           .attr("d", area(frame.points))
           .attr("fill", areaColor)
@@ -706,8 +657,13 @@
           .attr("x1", x(focusPoint.x))
           .attr("x2", x(focusPoint.x))
           .attr("y1", y(0))
-          .attr("y2", y(100));
-        focusDot.attr("cx", x(focusPoint.x)).attr("cy", y(focusPoint.y));
+          .attr("y2", y(100))
+          .attr("stroke-width", 1.6);
+        focusDot
+          .attr("cx", x(focusPoint.x))
+          .attr("cy", y(focusPoint.y))
+          .attr("r", 6)
+          .attr("stroke-width", 2);
 
         const calloutLabel = `Bottom ${focusPoint.x.toFixed(0)}% capture ${focusPoint.y.toFixed(1)}%`;
         calloutText.text(calloutLabel);
@@ -722,9 +678,9 @@
           .attr("height", 28);
 
         headline.text(`${frame.summary.top10.toFixed(1)}%`);
-        headline.attr("font-size", context.zoom ? 36 : 28);
+        headline.attr("font-size", 28);
         subline.text("of all reviews go to the top 10%");
-        footer.attr("opacity", 0.42 + zoomProgress * 0.58);
+        footer.attr("opacity", 1);
       };
     }
 
@@ -738,11 +694,6 @@
     function updateSummary(frame, context) {
       const roundedYear = Math.round(frame.year);
       yearBadge.textContent = `${roundedYear}`;
-      giniStat.textContent = frame.summary.gini.toFixed(3);
-      top10Stat.textContent = `${frame.summary.top10.toFixed(1)}%`;
-      bottom90Stat.textContent = `${frame.summary.bottom90.toFixed(1)}%`;
-      summaryHint.textContent =
-        `By ${roundedYear}, the bottom 90% of games collectively held only ${frame.summary.bottom90.toFixed(1)}% of all reviews.`;
       phaseText.textContent = getPhaseCopy(frame.year);
       progressFill.style.width = `${(context.planProgress * 100).toFixed(2)}%`;
       progressFill.classList.toggle("progress-pulse", context.pulse);
@@ -808,19 +759,27 @@
       updateSummary(frame, context);
     }
 
+    let lastTime = 0;
+
     function startAutoplay() {
       autoplayActive = true;
       playBtn.textContent = "Playing";
-      const startedAt = performance.now();
-      const duration = totalPlanDuration();
+      if (currentTimelineProgress >= 1) {
+        currentTimelineProgress = 0;
+      }
+      lastTime = performance.now();
 
       function step(now) {
-        if (!autoplayActive) {
-          return;
-        }
-        const progress = Math.min(1, (now - startedAt) / duration);
-        renderFromProgress(progress, now);
-        if (progress < 1) {
+        if (!autoplayActive) return;
+        
+        const dt = now - lastTime;
+        lastTime = now;
+        
+        const duration = totalPlanDuration();
+        currentTimelineProgress = Math.min(1, currentTimelineProgress + dt / duration);
+        renderFromProgress(currentTimelineProgress, now);
+        
+        if (currentTimelineProgress < 1) {
           rafId = requestAnimationFrame(step);
         } else {
           autoplayActive = false;
@@ -834,16 +793,42 @@
       rafId = requestAnimationFrame(step);
     }
 
-    function resetAndReplay() {
-      autoplayActive = false;
-      if (rafId) {
-        cancelAnimationFrame(rafId);
+    playBtn.addEventListener("click", () => {
+      if (autoplayActive) {
+        autoplayActive = false;
+        playBtn.textContent = "Resume";
+        if (rafId) cancelAnimationFrame(rafId);
+      } else {
+        startAutoplay();
       }
-      renderFromProgress(0, performance.now());
-      startAutoplay();
-    }
+    });
 
-    playBtn.addEventListener("click", resetAndReplay);
+    yearChips.forEach((chip) => {
+      chip.addEventListener("click", () => {
+        autoplayActive = false;
+        if (rafId) cancelAnimationFrame(rafId);
+        
+        const targetYear = Number(chip.dataset.year);
+        let progressToYear = 0;
+        
+        if (targetYear !== YEARS[0]) {
+            let cumulative = 0;
+            const total = totalPlanDuration();
+            for (let i = 0; i < timelinePlan.length; i++) {
+                const step = timelinePlan[i];
+                if ((step.type === "move" && step.to === targetYear) || 
+                    (step.type === "pause" && step.year === targetYear)) {
+                    progressToYear = step.type === "move" ? (cumulative + step.duration) / total : cumulative / total;
+                    break;
+                }
+                cumulative += step.duration;
+            }
+        }
+        
+        renderFromProgress(progressToYear, performance.now());
+        playBtn.textContent = currentTimelineProgress >= 1 ? "Replay" : "Resume";
+      });
+    });
 
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
